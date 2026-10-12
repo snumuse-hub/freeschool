@@ -74,8 +74,9 @@ function handle_(p){
   const isTeacher=!!p.teacherToken;
   if(isTeacher){const teacher=session_(p.teacherToken,'teacher');if(teacher.school!==u.school)throw Error('담당 학교가 아닙니다.');}
   else if(from.toLowerCase().includes('교사'))throw Error('교사 기록에는 교사 인증이 필요합니다.');
-  const source=isTeacher?'교사 타이머':from==='test'?'테스트':'AI 자동 측정';
-  const valid=source!=='테스트'; const id=uuid_(),at=new Date().toISOString();
+  const isTest=from==='test'||from.toLowerCase().includes('테스트');
+  const source=isTeacher?'교사 타이머':isTest?'테스트':'AI 자동 측정';
+  const valid=!isTest; const id=uuid_(),at=new Date().toISOString();
   sheet_('Records').appendRow([id,u.uid,ev,Math.round(sec*1000)/1000,at,source,valid]);
   return {record:{id,uid:u.uid,event:ev,sec:Math.round(sec*1000)/1000,at,source,valid}};
  }
