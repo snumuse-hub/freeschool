@@ -116,7 +116,7 @@
 <div id="toast" class="toast hidden" role="status"></div>
 <script>
 (()=>{'use strict';
-const SCHOOLS=['신월중','경원중','감계중','반림중','진영중'];
+const SCHOOLS=['신월중','경원중','감계중','반림중','진영중','자유학교'];
 const EVENTS=['3-3-3','3-6-3','3-6-3C','6-6','1-10-1'];
 const OFFICIAL=EVENTS.slice(0,3);
 const PROJECT_URL='https://chatgpt.com/g/g-p-6acc54eb0960819187038bebe7afa218-seupideuseutaegseu-yeonseub-kocing-badgi/project';
@@ -157,7 +157,7 @@ const COACH_FOOTER='연습 방법과 목표는 반드시 체육선생님과 의�
 const DIFFICULTIES=[['drop','🥤 컵을 자꾸 떨어뜨려요'],['order','🔀 동작 순서가 헷갈려요'],['six','🏗️ 6컵·10컵 쌓기가 어려워요'],['down','⚡ 컵을 내릴 때 잘 안돼요'],['hands','🙌 양손 움직임이 잘 맞지 않아요'],['speed','🐢 속도가 잘 빨라지지 않아요'],['variable','🎯 기록이 일정하지 않아요'],['nerves','😰 측정할 때 긴장돼요'],['unknown','🤔 어디가 문제인지 모르겠어요'],['other','✏️ 기타 (직접 작성)']];
 const $=id=>document.getElementById(id);
 const pages=['home','choice','ai','teacher','nextstudent','result','coach'];
-let schoolPop={신월중:360,경원중:320,감계중:280,반림중:335,진영중:310};
+let schoolPop={신월중:360,경원중:320,감계중:280,반림중:335,진영중:310,자유학교:0};
 let users=[],records=[],session=null,teacherVerified=false,teacherSchool='',currentPage='home',lastMode='ai',lastRecord=null,lastResultEvent='',selectedEvent='3-3-3',saveMode='auto',rankMode='school',authMode='login',coachReturn='choice',coachSelections=[],cameraFacing='environment';
 let currentUserUid='',state='idle',stream=null,hands=null,cameraActive=false,cameraBusy=false,processing=false,cameraLoopId=0,handScriptPromise=null,clockStart=0,readyAt=0,leaveAt=0,returnAt=0,soundContext=null,testTimer=false,measureSource='AI',pendingMeasurement=null,autoSaveToken=0,frontMirror=false;
 let fakeCounter=0;
@@ -193,14 +193,14 @@ async function remoteAuth(){
 function rankData(){let valid=allRecords().filter(r=>r.valid!==false&&OFFICIAL.includes(r.event)&&Number(r.sec)>0);const bestByEvent={};for(const e of OFFICIAL){const best=new Map();for(const r of valid.filter(x=>x.event===e)){if(!best.has(r.uid)||best.get(r.uid).sec>r.sec)best.set(r.uid,r);}const sorted=[...best.values()].sort((a,b)=>a.sec-b.sec||a.uid.localeCompare(b.uid));let last=NaN,rank=0;let items=sorted.map((r,i)=>{if(!Number.isFinite(last)||Math.abs(r.sec-last)>=.0005)rank=i+1;last=r.sec;return {...r,rank,score:sorted.length===1?100:1+99*(sorted.length-rank)/(sorted.length-1),user:byId(r.uid)};});bestByEvent[e]=items;}
  const people=new Map();for(const e of OFFICIAL){for(const entry of bestByEvent[e]){if(!people.has(entry.uid))people.set(entry.uid,{uid:entry.uid,school:entry.user?.school||'',grade:entry.user?.grade||'',nick:entry.user?.nick||'',scores:Object.fromEntries(OFFICIAL.map(k=>[k,0]))});people.get(entry.uid).scores[e]=entry.score;}}
  let individuals=[...people.values()].map(u=>({...u,total:Object.values(u.scores).reduce((a,b)=>a+b,0)})).sort((a,b)=>b.total-a.total||a.uid.localeCompare(b.uid));let last=NaN,rank=0;individuals=individuals.map((u,i)=>{if(!Number.isFinite(last)||Math.abs(last-u.total)>.000001)rank=i+1;last=u.total;return {...u,rank,overallScore:individuals.length===1?100:1+99*(individuals.length-rank)/(individuals.length-1)}});
- let schools=SCHOOLS.map(s=>{const pop=Math.max(1,num(schoolPop[s]));const students=individuals.filter(p=>p.school===s),pnum=students.length;const record=25*students.reduce((a,x)=>a+x.overallScore,0)/(pop*100);const events=25*students.reduce((a,x)=>a+x.total,0)/(pop*300);const participation=50*Math.min(1,pnum/pop);return {school:s,pop,pnum,record,events,participation,total:record+events+participation};}).sort((a,b)=>b.total-a.total||a.school.localeCompare(b.school));return {bestByEvent,individuals,schools};}
+ let schools=SCHOOLS.map(s=>{const configuredPop=num(schoolPop[s]);const pop=Math.max(1,configuredPop);const students=individuals.filter(p=>p.school===s),pnum=students.length;if(configuredPop<1)return {school:s,pop:0,pnum,record:0,events:0,participation:0,total:0,needsPopulation:true};const record=25*students.reduce((a,x)=>a+x.overallScore,0)/(pop*100);const events=25*students.reduce((a,x)=>a+x.total,0)/(pop*300);const participation=50*Math.min(1,pnum/pop);return {school:s,pop,pnum,record,events,participation,total:record+events+participation,needsPopulation:false};}).sort((a,b)=>b.total-a.total||a.school.localeCompare(b.school));return {bestByEvent,individuals,schools};}
 function td(value,cls){const e=document.createElement('td');if(cls)e.className=cls;e.textContent=value;return e;}function el(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;}
 function renderTable(columns,rows){const wrap=el('div','tableScroll'),table=el('table','rankTable'),thead=el('thead'),tr=el('tr');for(const c of columns)tr.append(el('th','',c));thead.append(tr);const tbody=el('tbody');for(const data of rows){const r=el('tr');data.forEach((s,i)=>r.append(td(s,i===0?'schoolCell':'')));tbody.append(r);}table.append(thead,tbody);wrap.append(table);return wrap;}
 function showRank(){
  const tabs=[['school','🏫 학교 종합'],['overall','🏅 개인 종합'],['3-3-3','🥤 3-3-3'],['3-6-3','⚡ 3-6-3'],['3-6-3C','🔥 사이클']];
  const holder=$('rankTabs');holder.replaceChildren();for(const [key,name] of tabs){const bt=el('button','chip'+(rankMode===key?' active':''),name);bt.type='button';bt.onclick=()=>{rankMode=key;showRank();};holder.append(bt);}
  const c=$('rankContent');c.replaceChildren();const d=rankData(),limit=rankMode==='school'?3:5;let columns=[],rows=[];
- if(rankMode==='school'){columns=['순위','학교','개인종합 /25','종목별 /25','참여 /50','합계 /100'];rows=d.schools.map((x,i)=>[(i+1)+'위',x.school,x.record.toFixed(1),x.events.toFixed(1),x.participation.toFixed(1),x.total.toFixed(1)]);}
+ if(rankMode==='school'){columns=['순위','학교','개인종합 /25','종목별 /25','참여 /50','합계 /100'];rows=d.schools.map((x,i)=>[(i+1)+'위',x.school+(x.needsPopulation?' · 학생 수 입력 필요':''),x.needsPopulation?'—':x.record.toFixed(1),x.needsPopulation?'—':x.events.toFixed(1),x.needsPopulation?'—':x.participation.toFixed(1),x.needsPopulation?'—':x.total.toFixed(1)]);}
  else if(rankMode==='overall'){columns=['순위','닉네임 · 소속','3-3-3','3-6-3','사이클','개인합계 /300'];rows=d.individuals.map(x=>[x.rank+'위',x.nick+' · '+x.school+' '+x.grade+'학년',fmtPoint(x.scores['3-3-3']),fmtPoint(x.scores['3-6-3']),fmtPoint(x.scores['3-6-3C']),x.total.toFixed(1)]);}
  else{columns=['순위','닉네임 · 소속','최고기록','순위환산점수'];rows=d.bestByEvent[rankMode].map(x=>[x.rank+'위',(x.user?.nick||'')+' · '+(x.user?.school||'')+' '+(x.user?.grade||'')+'학년',fmt(x.sec)+'초',x.score.toFixed(1)+'점']);}
  const tiles=el('div','scoreTiles');for(const [i,row] of rows.slice(0,limit).entries()){const tile=el('div','scoreTile');tile.append(el('span','',(['🥇','🥈','🥉','4️⃣','5️⃣'][i]||'')+' '+row[0]),el('strong','',rankMode==='school'?row[1]:row[1].split(' · ')[0]),el('span','',row[row.length-1]+(rankMode==='school'||rankMode==='overall'?'점':'')));tiles.append(tile);}if(rows.length)c.append(tiles);else c.append(el('p','hint','아직 등록된 기록이 없습니다.'));
