@@ -3946,6 +3946,50 @@ body{ -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; tex
 }
 </style>
 
+<style id="jstack-coach-v1-styles">
+#jstackCoachPanel{margin-top:18px;border-radius:18px;overflow:hidden;border:1px solid rgba(86,224,195,.38);background:linear-gradient(145deg,#0a2631,#071726);color:#e7f5fc;box-shadow:0 8px 26px rgba(1,10,18,.16)}
+#jstackCoachPanel *{box-sizing:border-box}
+#jstackCoachPanel .jstack-coach-head{padding:15px 14px;background:linear-gradient(100deg,#16423f,#12325a);display:flex;flex-direction:column;gap:4px}
+#jstackCoachPanel .jstack-coach-head span{font-weight:900;font-size:19px;color:#f8f8e8}
+#jstackCoachPanel .jstack-coach-head small{font-size:12px;color:#c1eedf;line-height:1.5}
+#jstackCoachPanel .jstack-coach-inner{padding:13px}
+#jstackCoachPanel .jstack-coach-event{font-weight:900;color:#ffdb82;margin:2px 0 11px}
+#jstackCoachPanel .jstack-coach-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+#jstackCoachPanel .jstack-coach-stats>div{background:#102f3f;border:1px solid #315a63;border-radius:13px;padding:11px 5px;text-align:center;min-width:0}
+#jstackCoachPanel .jstack-coach-stats small{display:block;font-size:10px;color:#b6dcdf;line-height:1.5}
+#jstackCoachPanel .jstack-coach-stats strong{display:block;font-size:clamp(14px,3.4vw,20px);color:#f8fafc;white-space:nowrap;margin-top:4px}
+#jstackCoachPanel .jstack-coach-source{font-size:11px;color:#b0c9d9;margin:8px 1px 13px}
+#jstackCoachPanel .jstack-coach-chart{border:1px solid #2a5968;background:#0b1c2e;border-radius:13px;padding:12px 9px 7px}
+#jstackCoachPanel .jstack-coach-chart strong{font-size:14px;color:#e1faef}
+#jstackCoachPanel #jstackCoachGraph{width:100%;display:block;max-height:150px;margin:5px 0 0}
+#jstackCoachPanel .jstack-coach-chart small{display:block;margin-top:3px;text-align:center;color:#b3cad9;font-size:11px}
+#jstackCoachPanel .jstack-coach-growth{margin:11px 0 15px;padding:11px 12px;border-radius:11px;background:#1b3841;color:#e4f8ed;line-height:1.55;font-size:13px;font-weight:800}
+#jstackCoachPanel .jstack-coach-question{font-weight:900;font-size:15px;line-height:1.6}
+#jstackCoachPanel .jstack-coach-question small{display:block;font-size:11px;color:#a8c5d9;font-weight:500;margin:3px 0 8px}
+#jstackCoachPanel .jstack-coach-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+#jstackCoachPanel .jstack-coach-option{width:100%;text-align:left;min-height:51px;border:1px solid #31516c;border-radius:11px;color:#e5f3f7;background:#132b3f;padding:9px;font-weight:750;font-size:12px;line-height:1.35;cursor:pointer;white-space:normal;word-break:keep-all}
+#jstackCoachPanel .jstack-coach-option[aria-pressed="true"]{border-color:#84f4c4;background:#204d4c;box-shadow:inset 0 0 0 1px #84f4c4;color:#fff}
+#jstackCoachPanel .jstack-coach-option:focus-visible,#jstackCoachPanel button:focus-visible{outline:2px solid #ffdb7c;outline-offset:2px}
+#jstackCoachPanel .jstack-coach-choice{text-align:right;font-size:11px;color:#9ab4c8;margin:7px 2px 11px}
+#jstackCoachPanel .jstack-coach-other{margin:9px 0}
+#jstackCoachPanel .jstack-coach-other label{display:block;font-size:12px;margin-bottom:5px}
+#jstackCoachPanel .jstack-coach-other textarea{width:100%;background:#071928;border:1px solid #3c7582;color:#ecffff;border-radius:10px;padding:11px;min-height:75px;font:inherit;font-size:13px;resize:vertical}
+#jstackCoachPanel .jstack-coach-teacher{padding:12px;background:#142d3a;border-radius:12px;border:1px solid #476b79;margin:12px 0}
+#jstackCoachPanel .jstack-coach-teacher b{font-size:13px;color:#ffe7a5}
+#jstackCoachPanel .jstack-coach-teacher p{margin:6px 0 0;font-size:12px;color:#dfecf3;line-height:1.55}
+#jstackCoachPanel .jstack-coach-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#jstackCoachPanel .jstack-coach-actions button{border-radius:12px;min-height:43px;border:1px solid #4e7886;padding:9px;font-size:12px;font-weight:900;cursor:pointer;line-height:1.45}
+#jstackCoachPanel .jstack-coach-primary{grid-column:1/-1;background:linear-gradient(130deg,#5bf0c5,#95f0ad);color:#06352d;border:none!important;font-size:15px!important}
+#jstackCoachPanel .jstack-coach-secondary{background:#173c51;color:#efffff}
+#jstackCoachPanel button:disabled{opacity:.48;cursor:not-allowed}
+#jstackCoachPanel .jstack-coach-alert{font-size:11px;min-height:22px;color:#cde5ee;line-height:1.6;margin:9px 0}
+#jstackCoachPanel .jstack-coach-details{background:#102633;border-radius:12px;padding:9px;margin:10px 0;border:1px solid #25475d}
+#jstackCoachPanel .jstack-coach-details summary{font-size:12px;font-weight:800;cursor:pointer}
+#jstackCoachPanel .jstack-coach-details textarea{width:100%;margin-top:9px;resize:vertical;white-space:pre-wrap;color:#f2f8fa;background:#091925;border:1px solid #3c6470;border-radius:8px;padding:9px;font-size:11px;line-height:1.6}
+#jstackCoachPanel .jstack-coach-privacy{color:#aac2d4;font-size:10px;line-height:1.55;margin:11px 0}
+#jstackCoachPanel .jstack-coach-footer{padding:11px 9px;border-radius:9px;background:#253a39;text-align:center;color:#ffe5a1;font-weight:900;font-size:12px;line-height:1.55;margin:0}
+@media(max-width:380px){#jstackCoachPanel .jstack-coach-options{grid-template-columns:1fr}#jstackCoachPanel .jstack-coach-stats{gap:4px}#jstackCoachPanel .jstack-coach-stats>div{padding:9px 2px}}
+</style>
 </head>
 <body class="auth-mode">
 <div id="v23Splash">
@@ -22653,6 +22697,43 @@ window.addEventListener('load',()=>{queueDecorate();setTimeout(queueDecorate,300
             <div class="jstack-ai-warning"><b>정확도 안내</b> · 실제 손바닥 접촉이나 컵의 완성·실수는 아직 판별하지 못합니다. 화면의 손 위치를 이용한 연습용 시간 측정입니다. 공식 기록은 체육교사와 확인하세요. AI 조언은 참고용이며, 훈련 전에 반드시 체육선생님의 확인을 받으세요. 카메라 영상은 별도 업로드하지 않습니다.</div>
           </div>
         </section>
+
+        <!-- 학생 선택형 스태킹 코치: 기존 저장 기록/카메라 기록 요약 + 개인정보 제외 복사 -->
+        <section id="jstackCoachPanel" aria-label="나만의 스피드스택스 AI 코칭">
+          <div class="jstack-coach-head"><span>🥤 나만의 AI 성장·연습 코치</span><small>📈 기록 분석 + 나의 고민 선택 + 개인별 피드백</small></div>
+          <div class="jstack-coach-inner">
+            <div id="jstackCoachEventLabel" class="jstack-coach-event">3-3-3 · 개인별 훈련</div>
+            <div class="jstack-coach-stats">
+              <div><small>⏱ 이번/최근 기록</small><strong id="jstackCoachLatest">—</strong></div>
+              <div><small>🏆 개인 최고기록</small><strong id="jstackCoachBest">—</strong></div>
+              <div><small>🌱 저장한 도전</small><strong id="jstackCoachAttempts">—</strong></div>
+            </div>
+            <p class="jstack-coach-source" id="jstackCoachSource">저장된 기록을 불러오는 중...</p>
+            <div class="jstack-coach-chart">
+              <strong>📈 나의 최근 기록 변화</strong>
+              <svg id="jstackCoachGraph" viewBox="0 0 320 118" role="img" aria-label="최근 저장된 기록 그래프"></svg>
+              <small id="jstackCoachChartNote">기록 2개부터 그래프를 표시합니다.</small>
+            </div>
+            <p id="jstackCoachGrowth" class="jstack-coach-growth">🌟 작은 도전 하나하나가 성장의 시작이에요!</p>
+            <div class="jstack-coach-question">🤔 오늘 가장 어려웠던 부분은 무엇인가요?<small>최대 2개 선택 · 선택하지 않은 문제를 AI가 지어내지 않아요.</small></div>
+            <div id="jstackCoachDifficulties" class="jstack-coach-options" role="group" aria-label="어려운 부분 선택"></div>
+            <div class="jstack-coach-choice" id="jstackCoachChoiceCount">0 / 2개 선택</div>
+            <div id="jstackCoachOtherWrap" class="jstack-coach-other" hidden>
+              <label for="jstackCoachOther">✏️ 어떤 부분이 어려웠나요?</label>
+              <textarea id="jstackCoachOther" rows="2" maxlength="350" placeholder="예: 마지막 3컵을 내릴 때 손이 꼬이는 것 같아요."></textarea>
+            </div>
+            <div class="jstack-coach-teacher"><b>👩‍🏫 선생님께 여쭤볼 질문</b><p id="jstackCoachTeacherQuestion">어려운 부분을 선택하면 선생님께 할 질문이 나타나요.</p></div>
+            <div class="jstack-coach-actions">
+              <button id="jstackCoachCopyGo" class="jstack-coach-primary" type="button" disabled>📋 기록 복사하고 코칭 프로젝트 열기 🤖</button>
+              <button id="jstackCoachCopy" class="jstack-coach-secondary" type="button" disabled>기록·어려움 복사</button>
+              <button id="jstackCoachOpenChat" class="jstack-coach-secondary" type="button">코칭 프로젝트만 열기 ↗</button>
+            </div>
+            <p id="jstackCoachWarning" class="jstack-coach-alert" role="status" aria-live="polite">먼저 어려운 부분을 1~2개 선택해 주세요.</p>
+            <details class="jstack-coach-details"><summary>📝 ChatGPT에 붙여넣을 내용 미리보기</summary><textarea id="jstackCoachPromptPreview" readonly rows="8" aria-label="AI 코칭 요청문 미리보기"></textarea></details>
+            <p class="jstack-coach-privacy">🔒 이름·학번·학교명은 복사하지 않습니다. 코칭 프로젝트에 자동 전송되지 않으며, 복사 후 직접 붙여넣어야 합니다. 공유 프로젝트의 다른 구성원도 대화를 볼 수 있으므로 개인정보나 민감한 이야기는 입력하지 마세요. 프로젝트 접근 권한이 필요할 수 있습니다.</p>
+            <p class="jstack-coach-footer">연습 방법과 목표는 반드시 체육선생님과 의논하고 피드백을 받으세요.</p>
+          </div>
+        </section>
         <div class="jstack-daily-goal" id="jstackDailyGoal" aria-live="polite">
           <div class="jstack-goal-head"><span>🎯 오늘 기록 목표 · 모든 종목 합계</span><b id="jstackGoalCount">0 / 10회</b></div>
           <div class="jstack-goal-track" role="progressbar" aria-label="오늘 기록 목표 진행률" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0"><span id="jstackGoalBar"></span></div>
@@ -23022,6 +23103,17 @@ window.addEventListener('load',()=>{queueDecorate();setTimeout(queueDecorate,300
   function currentData(){
     return dashboard&&dashboard.byEvent&&dashboard.byEvent[current] ? dashboard.byEvent[current] : {attempts:0,best:null,todayBest:null,history:[],recent:[],ranking:[],myRank:null,participants:0};
   }
+  // 기존 서버 대시보드의 현재 학생/현재 종목 개인 기록만 AI 코칭 모듈에 제공.
+  // 이름, 학번, 다른 학생 순위 데이터는 전달하지 않습니다.
+  window.jstackCoachGetSnapshot=function(){
+    var student=getStudent();
+    if(!student||!verifiedStudent||!sameStudent(student,verifiedStudent)||!dashboard||!dashboard.byEvent)return null;
+    var d=dashboard.byEvent[current]||{};
+    var history=(Array.isArray(d.history)?d.history:[]).map(function(r){
+      return {value:Number(r.value),date:String(r.date||''),attempt:r.attempt};
+    }).filter(function(r){return Number.isFinite(r.value)&&r.value>=1&&r.value<=300;});
+    return {event:current,attempts:Number(d.attempts)||0,best:Number(d.best)||null,history:history};
+  };
   function render(){
     var d=currentData();
     Array.prototype.forEach.call($('jstackTabs').children,function(b){b.classList.toggle('active',b.dataset.ev===current);});
@@ -23029,6 +23121,7 @@ window.addEventListener('load',()=>{queueDecorate();setTimeout(queueDecorate,300
     $('jstackBest').textContent=fmt(d.best);$('jstackToday').textContent=fmt(d.todayBest);$('jstackAttempts').textContent=Number(d.attempts||0)+'회';
     $('jstackMyRank').textContent=d.myRank ? d.myRank+'등' : '—';
     renderDailyProgress();renderRecent(d);renderRanking(d);drawChart(d.history||[]);
+    document.dispatchEvent(new Event('jstack:data-updated'));
   }
   function dailyProgressData(){
     var p=dashboard&&dashboard.todayProgress;
@@ -25567,6 +25660,7 @@ window.addEventListener('load',()=>{queueDecorate();setTimeout(queueDecorate,300
     if(phase!=='running')return;finishMs=Math.max(0,now-startAt);phase='done';$('jstackAiStop').disabled=true;setText('jstackAiTime',fmt(finishMs));setStatus('측정 완료 · '+trialEvent,'시간을 확인해 주세요. 손 위치에 기반한 연습용 측정값입니다.');feedback();
     if(!active||manual||how!=='camera'){setText('jstackAiSaveMessage','수동 종료 또는 테스트 모드는 저장하지 않습니다. 실제 카메라 자동 종료로 측정해 주세요.');updateSaveNowButton();return;}
     if(finishMs<1000||finishMs>300000){setText('jstackAiSaveMessage','기록 허용 범위(1.000~300.000초) 밖이어서 저장할 수 없습니다.');updateSaveNowButton();return;}
+    document.dispatchEvent(new CustomEvent('jstack:ai-finished',{detail:{event:trialEvent,seconds:Number(fmt(finishMs))}}));
     var r=makePending(trialEvent,Number(fmt(finishMs)));if(!r)return;currentPendingId=r.id;updateSaveNowButton();
     if($('jstackAiAutoSave').checked){scheduleAutoSave(r.id);}else setText('jstackAiSaveMessage','✅ 측정 기록이 미저장 목록에 보관되었습니다. 아래 기록 저장 버튼으로 언제든 제출할 수 있습니다.');
   }
@@ -25691,4 +25785,229 @@ window.addEventListener('load',()=>{queueDecorate();setTimeout(queueDecorate,300
 
 </script>
 
+<script id="jstack-coach-logic-v1">
+(function(){
+  'use strict';
+  if(window.__jstackCoachV1)return;
+  window.__jstackCoachV1=true;
+  var EVENTS=['3-3-3','3-6-3','6-6','1-10-1','3-6-3c'];
+  var FOOTER='연습 방법과 목표는 반드시 체육선생님과 의논하고 피드백을 받으세요.';
+  // 교사가 지정한 스포츠스태킹 연습 코칭 ChatGPT 프로젝트로 이동합니다.
+  // 접근 권한이 없는 학생에게는 프로젝트 공유 설정 안내가 필요할 수 있습니다.
+  var CHATGPT_URL='https://chatgpt.com/g/g-p-6acc54eb0960819187038bebe7afa218-seupideuseutaegseu-yeonseub-kocing-badgi/project';
+  var QUESTIONS={
+    'drop':'선생님, 컵을 안정적으로 잡고 놓으려면 어떤 점을 고치면 좋을까요?',
+    'order':'선생님, 제가 수행하는 동작 순서가 맞는지 확인해 주세요.',
+    'pyramid':'선생님, 6컵 또는 10컵의 쌓는 순서와 손의 움직임을 확인해 주세요.',
+    'down':'선생님, 컵을 내릴 때 손을 어떻게 움직이면 더 정확해질까요?',
+    'hands':'선생님, 양손을 어떤 순서와 리듬으로 움직이면 좋을까요?',
+    'speed':'선생님, 제 동작에서 속도를 높이기 위해 먼저 연습할 부분은 무엇인가요?',
+    'variance':'선생님, 제 동작 리듬이 일정한지 직접 봐 주세요.',
+    'nervous':'선생님, 긴장하지 않고 편안하게 연습하려면 어떻게 하면 좋을까요?',
+    'unknown':'🙋 체육선생님께 꼭 질문하세요! 선생님, 제가 어디에서 어려움을 겪는지 잘 모르겠어요. 제 동작을 직접 보시고 어떤 부분을 먼저 연습해야 할지 알려 주세요.',
+    'other':'선생님, 제가 느끼는 어려움을 설명할 테니 제 동작을 봐 주시고 먼저 연습할 부분을 알려 주세요.'
+  };
+  var difficulties=[
+    {id:'drop',label:'🥤 컵을 자꾸 떨어뜨려요'},
+    {id:'order',label:'🔀 동작 순서가 헷갈려요'},
+    {id:'pyramid',label:'🏗️ 6컵·10컵 쌓기가 어려워요'},
+    {id:'down',label:'⚡ 컵을 내릴 때 잘 안돼요'},
+    {id:'hands',label:'🙌 양손 움직임이 잘 맞지 않아요'},
+    {id:'speed',label:'🐢 속도가 잘 빨라지지 않아요'},
+    {id:'variance',label:'🎯 기록이 일정하지 않아요'},
+    {id:'nervous',label:'😰 측정할 때 긴장돼요'},
+    {id:'unknown',label:'🤔 어디가 문제인지 잘 모르겠어요'},
+    {id:'other',label:'✏️ 기타 · 직접 작성'}
+  ];
+  var chosen=[],lastCamera=null,openedSessionKey='',lastSnapshot=null;
+  var $=function(id){return document.getElementById(id);};
+  var clamp=function(n,lo,hi){return Math.max(lo,Math.min(hi,n));};
+  function fmt(v){return Number.isFinite(Number(v))&&Number(v)>0?Number(v).toFixed(3)+'초':'—';}
+  function setText(id,val){var n=$(id);if(n)n.textContent=val;}
+  function selectedEvent(){var tab=document.querySelector('#jstackTabs .jstack-event.active');var event=tab&&tab.getAttribute('data-ev');return EVENTS.indexOf(event)>-1?event:((($('jstackEventBig')||{}).textContent)||'3-3-3').trim();}
+  function sessionKey(){
+    try{var st=JSON.parse(sessionStorage.getItem('v8Student')||'null');return st&&st.studentNo&&st.studentName?String(st.studentId||'')+'|'+String(st.studentNo)+'|'+String(st.studentName):'';}
+    catch(e){return '';}
+  }
+  function getContext(){
+    var data=typeof window.jstackCoachGetSnapshot==='function'?window.jstackCoachGetSnapshot():null;
+    if(!data||EVENTS.indexOf(data.event)<0)return null;
+    var key=sessionKey();
+    if(key!==openedSessionKey){lastCamera=null;chosen=[];openedSessionKey=key;if($('jstackCoachOther'))$('jstackCoachOther').value='';renderIssues();}
+    else if(lastSnapshot&&lastSnapshot.event!==data.event){chosen=[];if($('jstackCoachOther'))$('jstackCoachOther').value='';renderIssues();}
+    return data;
+  }
+  function getLatest(data){
+    var all=Array.isArray(data.history)?data.history:[];
+    var latest=all.length?Number(all[all.length-1].value):NaN;
+    var cam=lastCamera&&lastCamera.event===data.event&&Number.isFinite(lastCamera.seconds)?lastCamera:null;
+    // 임시 카메라 측정은 이전 저장 기록과 구별하여 전달합니다.
+    if(cam&&(!all.length||Date.now()-cam.receivedAt<20*60*1000)){
+      if(all.length&&Number.isFinite(latest)&&Math.abs(latest-cam.seconds)<.0000001)return {value:latest,source:'마지막 저장 기록'};
+      return {value:cam.seconds,source:'카메라 임시 측정'};
+    }
+    return Number.isFinite(latest)&&latest>0?{value:latest,source:'마지막 저장 기록'}:null;
+  }
+  function renderIssues(){
+    var wrap=$('jstackCoachDifficulties');if(!wrap)return;
+    wrap.replaceChildren();
+    difficulties.forEach(function(item){
+      var b=document.createElement('button');b.type='button';b.className='jstack-coach-option';
+      b.setAttribute('aria-pressed',chosen.indexOf(item.id)>=0?'true':'false');
+      b.textContent=item.label;
+      b.addEventListener('click',function(){
+        var idx=chosen.indexOf(item.id);if(idx>=0)chosen.splice(idx,1);
+        else if(chosen.length<2)chosen.push(item.id);
+        else {chosen.shift();chosen.push(item.id);}
+        renderIssues();render();
+      });
+      wrap.appendChild(b);
+    });
+    var other=$('jstackCoachOtherWrap');if(other)other.hidden=chosen.indexOf('other')<0;
+    setText('jstackCoachChoiceCount',chosen.length+' / 2개 선택');
+  }
+  function contextRecords(d){
+    return (Array.isArray(d.history)?d.history:[]).map(function(r){return {value:Number(r.value),date:String(r.date||''),attempt:r.attempt};}).filter(function(r){return Number.isFinite(r.value)&&r.value>=1&&r.value<=300;});
+  }
+  function drawGraph(records){
+    var svg=$('jstackCoachGraph');if(!svg)return;
+    while(svg.firstChild)svg.removeChild(svg.firstChild);
+    if(records.length<2){svg.setAttribute('aria-label','그래프를 만들려면 저장된 기록 2개 이상이 필요합니다.');return;}
+    var rows=records.slice(-8), nums=rows.map(function(x){return x.value;});
+    var min=Math.min.apply(Math,nums),max=Math.max.apply(Math,nums);
+    var delta=Math.max(.3,max-min),pad=delta*.22;
+    var low=min-pad, high=max+pad;
+    var W=320,H=118,left=30,right=13,top=15,bottom=20;
+    function x(i){return left+i*(W-left-right)/(rows.length-1);}
+    function y(v){return top+(high-v)/(high-low)*(H-top-bottom);}
+    function node(tag,attrs,text){var el=document.createElementNS('http://www.w3.org/2000/svg',tag);Object.keys(attrs||{}).forEach(function(k){el.setAttribute(k,String(attrs[k]));});if(text!==undefined)el.textContent=text;svg.appendChild(el);return el;}
+    for(var j=0;j<3;j++){
+      var yy=top+j*(H-top-bottom)/2;
+      node('line',{x1:left,y1:yy,x2:W-right,y2:yy,stroke:'#466074','stroke-width':'.7','stroke-dasharray':'3 4'});
+      node('text',{x:3,y:yy+4,fill:'#93b6cf','font-size':'9'},(high-(high-low)*j/2).toFixed(2));
+    }
+    var pts=rows.map(function(r,i){return x(i).toFixed(2)+','+y(r.value).toFixed(2);}).join(' ');
+    node('polyline',{points:pts,fill:'none',stroke:'#65efd4','stroke-width':'2.8','stroke-linecap':'round','stroke-linejoin':'round'});
+    rows.forEach(function(r,i){node('circle',{cx:x(i),cy:y(r.value),r:'3.7',fill:'#ffce70',stroke:'#0b1b2b','stroke-width':'1.5'});});
+    node('text',{x:left,y:H-3,fill:'#a8c1d0','font-size':'10'},'이전');
+    node('text',{x:W-right,y:H-3,fill:'#a8c1d0','text-anchor':'end','font-size':'10'},'최근');
+    svg.setAttribute('aria-label','최근 '+rows.length+'회 기록: '+nums.slice(-rows.length).map(function(n){return n.toFixed(3)+'초';}).join(', '));
+  }
+  function summarize(d){
+    var hist=contextRecords(d), latest=getLatest(d), best=Number(d.best||0);
+    var previous=hist.length>=2?Math.min.apply(Math,hist.slice(0,-1).map(function(x){return x.value;})):NaN;
+    if(latest&&latest.source==='카메라 임시 측정'&&hist.length)previous=Math.min.apply(Math,hist.map(function(x){return x.value;}));
+    setText('jstackCoachEventLabel',d.event+' · 개인별 훈련');
+    setText('jstackCoachLatest',latest?fmt(latest.value):'기록 없음');
+    setText('jstackCoachBest',fmt(best));
+    setText('jstackCoachAttempts',Number(d.attempts||hist.length)+'회');
+    setText('jstackCoachSource',latest?latest.source+' · 낮을수록 좋은 기록':'먼저 기록을 저장하거나 카메라로 측정해 주세요.');
+    var msg;
+    if(!hist.length&&!latest)msg='🌱 아직 기록이 없어요. 첫 기록부터 차근차근 시작해 봅시다!';
+    else if(hist.length<2)msg='🌟 첫 기록부터 멋진 시작이에요! 기록이 더 쌓이면 성장 변화를 비교할 수 있어요.';
+    else {
+      var start=hist[0].value,end=latest&&latest.source==='카메라 임시 측정'?latest.value:hist[hist.length-1].value,diff=start-end;
+      msg=diff>0.005?'🌟 첫 기록보다 '+diff.toFixed(3)+'초 빨라졌어요!':diff<-.005?'🌱 첫 기록보다 '+Math.abs(diff).toFixed(3)+'초 늘었지만, 꾸준히 도전하며 변화를 살펴봐요.':'🌼 처음과 비슷한 기록이에요. 정확성을 유지하며 도전해 봅시다.';
+    }
+    setText('jstackCoachGrowth',msg);
+    drawGraph(hist);
+    var c=$('jstackCoachChartNote');if(c)c.textContent=hist.length>=2?'최근 '+Math.min(hist.length,8)+'회 저장 기록 · 낮을수록 빠름':'저장 기록 2개부터 그래프를 표시합니다.';
+    var preview=$('jstackCoachPromptPreview');if(preview)preview.value=buildPrompt(d,hist,latest,previous);
+    var disabled=(!latest&&!hist.length)||chosen.length===0||(chosen.indexOf('other')>=0&&!String(($('jstackCoachOther')||{}).value||'').trim());
+    var copy=$('jstackCoachCopy'),go=$('jstackCoachCopyGo');if(copy)copy.disabled=!!disabled;if(go)go.disabled=!!disabled;
+    var asks=chosen.map(function(id){return QUESTIONS[id];});
+    setText('jstackCoachTeacherQuestion',asks.length?asks.join('  '):'어려운 부분을 선택하면 체육선생님께 할 질문이 나타나요.');
+    setText('jstackCoachWarning',disabled?'어려운 부분을 1~2개 선택한 뒤 기록을 복사해 주세요.':'✅ AI 코칭 요청문 준비 완료! 학생 이름과 학번은 포함되지 않습니다.');
+  }
+  function buildPrompt(d,records,latest,prevBest){
+    var text=chosen.map(function(id){var item=difficulties.filter(function(x){return x.id===id;})[0];return id==='other'?'✏️ 기타: '+String(($('jstackCoachOther')||{}).value||'').trim():(item?item.label:id);}).join(' / ');
+    var recent=records.slice(-10).map(function(r,i){return (records.length-Math.min(records.length,10)+i+1)+'회: '+r.value.toFixed(3)+'초'+(r.date?' ('+r.date+')':'');}).join('\n');
+    var special=chosen.indexOf('unknown')>=0?'특별 지시: 학생이 어디가 문제인지 모른다고 했으므로 "🙋 체육선생님께 꼭 질문하세요! 선생님, 제가 어디에서 어려움을 겪는지 잘 모르겠어요. 제 동작을 직접 보시고 어떤 부분을 먼저 연습해야 할지 알려 주세요."라는 내용을 반드시 눈에 띄게 표시하세요.':'';
+    return [
+      '🥤 스포츠스태킹 개인별 AI 연습 코칭 요청',
+      '',
+      '[학생 본인의 기록 · 개인정보 제외]',
+      '종목: '+d.event,
+      '현재/최근 측정: '+(latest?latest.value.toFixed(3)+'초 ('+latest.source+')':'측정값 없음'),
+      '저장된 개인 최고기록: '+(Number(d.best)>0?Number(d.best).toFixed(3)+'초':'없음'),
+      '현재 측정 전 개인 최고기록(확인 가능할 때): '+(Number.isFinite(prevBest)?prevBest.toFixed(3)+'초':'확인할 수 없음'),
+      '누적 저장 횟수: '+Number(d.attempts||records.length)+'회',
+      '최근 저장 기록(오래된 순서부터):',recent||'아직 저장된 기록 없음',
+      '',
+      '[학생이 직접 선택한 어려움]',text||'미선택',
+      '',
+      '[코칭 요청]',
+      '학생은 중학생입니다. 선택한 어려움과 실제 기록에 맞추어 따뜻하고 긍정적인 개별 코칭을 바로 제시하세요. 이미 어려움을 선택했으니 다시 선택하라고 묻지 마세요.',
+      '📊 실제 기록 수치로 변화·최고기록을 정확하게 비교하고, 가능하면 간단한 꺾은선그래프(불가능하면 표)를 보여 주세요. 이번 기록이 미저장 카메라 측정이면 기존 저장 기록과 구분하세요.',
+      '🌟 참여와 도전의 가치 및 확인된 성장에 대해 구체적이고 긍정적으로 칭찬하세요. 기록이 느려져도 비난하지 마세요.',
+      '🔍 학생이 스스로 느낀 어려움을 실제 오류가 확인된 것처럼 단정하지 마세요.',
+      '💪 이 종목과 학생의 어려움에 맞는 연습 2개를 각기 동작 방법, 반복 횟수, 연습 목적까지 구체적으로 안내하세요.',
+      '🎯 학생 수준에 맞는 실천 가능한 다음 목표 1가지를 제안하세요.',
+      '👩‍🏫 선택한 어려움에 맞춰 학생이 체육선생님께 그대로 질문할 수 있는 구체적인 질문을 하나 이상 제시하세요.',
+      '선생님께 여쭤볼 질문 예시: '+chosen.map(function(id){return QUESTIONS[id];}).join(' / '),
+      special,
+      '🏆 짧고 다정한 응원 메시지를 넣으세요. 🥤🌟🐣💪🎯 같은 이모지를 지나치지 않게 사용하고 휴대폰에서 보기 쉬운 짧은 표·소제목으로 작성하세요.',
+      '기록만으로 컵 배열, 낙하, 실제 손동작, 기술적 실수, 규칙 위반을 직접 확인했다고 주장하지 마세요. 시간 단축의 원인이나 연습의 효과를 단정하지 마세요.',
+      '개인정보(이름·학번·학교명)를 요구하지 마세요.',
+      '마지막 문장은 반드시 다음 문장과 정확히 같아야 하며, 그 뒤에 다른 말을 붙이지 마세요.',
+      FOOTER
+    ].filter(Boolean).join('\n');
+  }
+  function render(){
+    var app=$('jayuStackApp');if(!app||app.style.display==='none')return;
+    var ctx=getContext();
+    if(!ctx){
+      setText('jstackCoachWarning','로그인한 학생의 저장 기록을 불러오면 분석할 수 있어요.');
+      var c=$('jstackCoachCopy'),g=$('jstackCoachCopyGo');if(c)c.disabled=true;if(g)g.disabled=true;
+      return;
+    }
+    lastSnapshot=ctx;
+    summarize(ctx);
+  }
+  function copyPrompt(){
+    var val=String(($('jstackCoachPromptPreview')||{}).value||'');
+    if(!val||chosen.length<1)throw new Error('기록과 어려운 부분을 먼저 선택해 주세요.');
+    var input=$('jstackCoachPromptPreview');
+    if(navigator.clipboard&&window.isSecureContext){return navigator.clipboard.writeText(val).catch(function(){return legacyCopy(input);});}
+    return legacyCopy(input);
+  }
+  function legacyCopy(input){
+    if(!input)throw Error('복사할 내용을 찾지 못했습니다.');
+    var parent=input.closest('details'),wasOpen=parent?parent.open:false;if(parent)parent.open=true;
+    input.focus();input.select();input.setSelectionRange(0,input.value.length);
+    var ok=document.execCommand('copy');
+    if(parent&&!wasOpen)parent.open=false;
+    if(!ok)throw Error('자동 복사가 안 되었습니다. 아래 미리보기 내용을 길게 눌러 직접 복사해 주세요.');
+    return Promise.resolve();
+  }
+  async function handleCopy(openChat){
+    var newTab=null,copyOperation;
+    try{copyOperation=copyPrompt();}catch(e){setText('jstackCoachWarning','⚠️ '+(e.message||'기록을 먼저 선택해 주세요.'));return;}
+    if(openChat){try{newTab=window.open(CHATGPT_URL,'_blank');if(newTab)newTab.opener=null;}catch(e){newTab=null;}}
+    try{await copyOperation;setText('jstackCoachWarning',openChat&&!newTab?'✅ 기록 복사 완료! 새 탭이 열리지 않으면 「코칭 프로젝트만 열기」를 눌러 주세요.':'✅ 기록·선택한 어려움·코칭 규칙이 복사됐어요! 코칭 프로젝트에서 붙여넣고 전송하세요.');}
+    catch(e){setText('jstackCoachWarning','⚠️ '+(e.message||'복사가 안 됐어요. 미리보기를 직접 복사해 주세요.'));}
+  }
+  function boot(){
+    var wrap=$('jstackCoachPanel');if(!wrap)return;
+    renderIssues();
+    if($('jstackCoachOther'))$('jstackCoachOther').addEventListener('input',render);
+    if($('jstackCoachCopy'))$('jstackCoachCopy').addEventListener('click',function(){handleCopy(false);});
+    if($('jstackCoachCopyGo'))$('jstackCoachCopyGo').addEventListener('click',function(){handleCopy(true);});
+    if($('jstackCoachOpenChat'))$('jstackCoachOpenChat').addEventListener('click',function(){window.open(CHATGPT_URL,'_blank','noopener');});
+    document.addEventListener('jstack:data-updated',function(){render();});
+    document.addEventListener('jstack:ai-finished',function(e){
+      var d=e&&e.detail||{};
+      if(EVENTS.indexOf(d.event)<0||!Number.isFinite(Number(d.seconds))||Number(d.seconds)<1||Number(d.seconds)>300)return;
+      if(!sessionKey())return;
+      lastCamera={event:d.event,seconds:Number(d.seconds),receivedAt:Date.now()};
+      render();
+    });
+    var tabs=$('jstackTabs');if(tabs)tabs.addEventListener('click',function(){setTimeout(render,0);});
+    document.addEventListener('visibilitychange',function(){if(!document.hidden)render();});
+    render();
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+})();
+
+</script>
 </body></html>
