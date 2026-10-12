@@ -8,6 +8,7 @@
 const DB_ID = '1qV7r-nRYBGSCv1FBYiUjQ0UIqatIpa0Cvd1YIopcZIY';
 const SCHOOL_NAMES = ['신월중','경원중','감계중','반림중','진영중','자유학교'];
 const EVENT_NAMES = ['3-3-3','3-6-3','3-6-3C','6-6','1-10-1'];
+const OFFICIAL_EVENT_NAMES = EVENT_NAMES.slice(0,3);
 const CACHE_TTL = 1200;
 const SESSION_TTL = 21600;
 
@@ -77,7 +78,7 @@ function handle_(p){
   else if(from.toLowerCase().includes('교사'))throw Error('교사 기록에는 교사 인증이 필요합니다.');
   const isTest=from==='test'||from.toLowerCase().includes('테스트');
   const source=isTeacher?'교사 타이머':isTest?'테스트':'AI 자동 측정';
-  const valid=!isTest; const id=uuid_(),at=new Date().toISOString();
+  const valid=!isTest&&OFFICIAL_EVENT_NAMES.includes(ev); const id=uuid_(),at=new Date().toISOString();
   const sh=sheet_('Records'),row=sh.getLastRow()+1;
   sh.getRange(row,3).setNumberFormat('@');
   sh.getRange(row,1,1,7).setValues([[id,u.uid,ev,Math.round(sec*1000)/1000,at,source,valid]]);
