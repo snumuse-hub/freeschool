@@ -67,7 +67,9 @@ function handle_(p){
  }
  if(action==='teacherLogin'){
   const admin=PropertiesService.getScriptProperties().getProperty('TEACHER_PIN')||'',code=text_(p.code,100),school=text_(p.school,30);
-  if(!SCHOOL_NAMES.includes(school)||admin.length<8||code!==admin)throw Error('교사 관리번호가 일치하지 않거나 서버에 설정되지 않았습니다.');
+  if(!SCHOOL_NAMES.includes(school))throw Error('학생 계정으로 먼저 로그인한 뒤 교사 인증을 해 주세요.');
+  if(admin.length<8)throw Error('서버에 실제 교사 관리번호가 설정되지 않았습니다. Apps Script 스크립트 속성의 TEACHER_PIN을 확인해 주세요.');
+  if(code!==admin)throw Error('입력한 교사 관리번호가 Apps Script에 등록된 번호와 일치하지 않습니다.');
   return {teacherToken:createSession_('teacher','teacher',school)};
  }
  if(action==='record'){
