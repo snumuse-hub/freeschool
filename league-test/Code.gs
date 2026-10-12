@@ -20,7 +20,8 @@ function pepper_(){const p=PropertiesService.getScriptProperties();let pepper=p.
 function hash_(pin,salt){const raw=String(salt)+'|'+String(pin)+'|'+pepper_();return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256,raw).map(b=>('0'+(b&255).toString(16)).slice(-2)).join('');}
 function safeReceipt_(p){const id=text_(p.requestId,90);if(!/^[\w-]{20,90}$/.test(id))throw Error('요청 번호가 잘못되었습니다.');return id;}
 function userRow_(r){return {uid:String(r[0]),school:String(r[1]),grade:Number(r[2]),nick:String(r[3])};}
-function recordRow_(r){return {id:String(r[0]),uid:String(r[1]),event:String(r[2]),sec:Number(r[3]),at:String(r[4]),source:String(r[5]),valid:r[6]===true||String(r[6]).toLowerCase()==='true'};}
+function eventText_(v){if(v instanceof Date)return String(v.getFullYear()%10)+'-'+(v.getMonth()+1)+'-'+v.getDate();return String(v);}
+function recordRow_(r){return {id:String(r[0]),uid:String(r[1]),event:eventText_(r[2]),sec:Number(r[3]),at:String(r[4]),source:String(r[5]),valid:r[6]===true||String(r[6]).toLowerCase()==='true'};}
 function readAll_(){const schools=rows_('Schools'),pop={};schools.forEach(r=>pop[String(r[0])]=Number(r[1]));return {ok:true,users:rows_('Users').map(userRow_),records:rows_('Records').map(recordRow_),schoolPop:pop,serverTime:new Date().toISOString()};}
 function session_(token,role){const id=text_(token,120);if(!/^[\w-]{20,120}$/.test(id))throw Error('다시 로그인해 주세요.');const raw=cache_().get('session_'+id);if(!raw)throw Error('로그인 시간이 만료되었습니다. 다시 로그인해 주세요.');const s=JSON.parse(raw);if(s.role!==role)throw Error('접근 권한이 없습니다.');return s;}
 function createSession_(uid,role,school){const t=uuid_()+'-'+uuid_();cache_().put('session_'+t,JSON.stringify({uid,role,school}),SESSION_TTL);return t;}
@@ -77,7 +78,9 @@ function handle_(p){
   const isTest=from==='test'||from.toLowerCase().includes('테스트');
   const source=isTeacher?'교사 타이머':isTest?'테스트':'AI 자동 측정';
   const valid=!isTest; const id=uuid_(),at=new Date().toISOString();
-  sheet_('Records').appendRow([id,u.uid,ev,Math.round(sec*1000)/1000,at,source,valid]);
+  const sh=sheet_('Records'),row=sh.getLastRow()+1;
+  sh.getRange(row,3).setNumberFormat('@');
+  sh.getRange(row,1,1,7).setValues([[id,u.uid,ev,Math.round(sec*1000)/1000,at,source,valid]]);
   return {record:{id,uid:u.uid,event:ev,sec:Math.round(sec*1000)/1000,at,source,valid}};
  }
  if(action==='population'){
