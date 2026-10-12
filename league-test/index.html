@@ -18,6 +18,7 @@
 .aiHistoryPanel .historyRow span{color:#745344}
 .aiHistoryPanel .historyRow b{color:#e65c23}
 .aiHistoryPanel .hint{font-size:12px;color:#816952}
+.rankExtra{margin-top:14px;border:1px solid #eed8c2;border-radius:15px;padding:12px;background:#fffdf8}.rankExtra>summary{font-weight:850;color:#ad501b;cursor:pointer;padding:10px}.rankExtraScroll{max-height:320px;overflow:auto;overscroll-behavior:contain}.myRank{display:flex;justify-content:space-between;padding:14px;border:1px solid #ffbf73;border-radius:13px;background:#ffedcf;margin-top:12px}.scoreTile strong{font-size:clamp(14px,2vw,21px);overflow-wrap:anywhere}
 </style>
 </head>
 <body>
@@ -26,9 +27,9 @@
 <div class="eyebrow">🥤 STACKING LEAGUE 2026 · 2학기</div>
 <h1>2026년 2학기<br>스포츠 스태킹 온라인 리그전</h1>
 <p>도전은 나의 성장으로, 참여는 우리의 승리로! 🌟</p>
-<div class="heroPills"><span>🏫 6개 학교</span><span>🏆 3개 리그 종목</span><span>📷 AI 자동 측정</span><span>💛 누구나 학교에 기여!</span></div>
+<div class="heroPills"><span>🏫 5개 학교</span><span>🏆 3개 리그 종목</span><span>📷 AI 자동 측정</span><span>💛 누구나 학교에 기여!</span></div>
 </header>
-<div class="demo">🧪 <b>1차 기능 시안</b> — 순위·학생·기록은 가상 예시이며, 이 HTML의 로그인·저장은 현재 브라우저 안에서만 작동합니다. 실제 학교 데이터, 구글 시트, 교사 인증 서버와는 연결되지 않습니다. 실사용 비밀번호를 입력하지 마세요.</div>
+<div class="demo" id="backendStatus">🧪 <b>1차 기능 시안</b> — 순위·학생·기록은 가상 예시이며, 이 HTML의 로그인·저장은 현재 브라우저 안에서만 작동합니다. 실제 학교 데이터, 구글 시트, 교사 인증 서버와는 연결되지 않습니다. 실사용 비밀번호를 입력하지 마세요.</div>
 <main>
 <section id="page-home">
  <div class="card">
@@ -54,7 +55,7 @@
  <div class="selectCards">
  <button type="button" class="optionCard" data-action="ai"><span class="emoji">📸</span><div><strong>AI 측정</strong><p>손 위치 인식 · 자동 타이머<br>준비·종료 신호음 🔊</p></div></button>
  <button type="button" class="optionCard" data-action="teacher"><span class="emoji">👩‍🏫</span><div><strong>선생님과 측정</strong><p>스택스 타이머 측정 후<br>선생님이 기록 입력</p></div></button>
- <button type="button" class="optionCard" data-action="coach"><span class="emoji">🤖</span><div><strong>AI 코칭 받기</strong><p>기록 분석 · 어려움 선택<br>맞춤형 연습 코칭</p></div></button>
+ <button type="button" class="optionCard" data-action="coach"><span class="emoji">🤖</span><div><strong>기록 확인 및 코칭 받기</strong><p>종목별 누적 그래프 · BEST 5<br>맞춤형 AI 연습 코칭</p></div></button>
  </div></div>
  <div class="card soft"><h3>📊 나의 현재 기록</h3><div id="choiceSummary" class="scoreTiles"></div><p class="sub">공식 리그 3종목만 개인 종합점수에 반영됩니다. 6-6과 1-10-1은 연습용 종목입니다.</p></div>
 </section>
@@ -102,8 +103,8 @@
  <h3 style="margin-top:24px">🚀 다음엔 무엇을 할까요?</h3><div class="actionGrid"><button class="btn gold" type="button" data-action="next-event">🔁 다음 종목 측정</button><button class="btn primary" type="button" data-action="coach">🤖 AI 코칭 받기</button><button class="btn red" type="button" data-action="logout">🚪 로그아웃</button><button class="btn outline" type="button" data-action="next-student" id="resultNextStudent">🙋 다른 학생 등록</button></div>
  </div></section>
 <section id="page-coach" class="hidden"><div class="nav"><button class="btn outline small" type="button" data-action="coach-back">← 돌아가기</button><span class="identity" id="coachIdentity"></span></div><div class="card">
- <h2>🤖 나만의 AI 연습 코치</h2><p class="sub">개인 기록과 어려움을 함께 전달하면 더욱 구체적으로 코칭받을 수 있어요. 😊</p>
- <div class="field"><label for="coachEvent">🥤 코칭받을 종목</label><select id="coachEvent"></select></div><div id="coachPreview" class="coachBox"></div>
+ <h2>🤖 기록 확인 및 AI 코칭 받기</h2><p class="sub">개인 기록과 어려움을 함께 전달하면 더욱 구체적으로 코칭받을 수 있어요. 😊</p>
+ <div class="field"><label for="coachEvent">🥤 코칭받을 종목</label><select id="coachEvent"></select></div><button class="btn primary block" id="coachShowRecords" type="button" style="margin-bottom:12px">📈 선택 종목 기록 확인</button><div id="coachRecords" class="panel hidden"><h3>📈 기록 누적 그래프</h3><div id="coachGraph"></div><h3>🏅 BEST 5 기록</h3><div id="coachBest5"></div></div><div id="coachPreview" class="coachBox"></div>
  <h3 style="margin:23px 0 8px">🤔 어떤 부분이 어려웠나요?</h3><p class="hint">최대 2개를 선택하세요. 다른 내용이라면 기타에 직접 적어주세요.</p><div class="coachOptions" id="coachOptions"></div>
  <div class="field hidden" id="coachOtherArea" style="margin-top:14px"><label for="coachOther">✏️ 기타 어려움</label><textarea id="coachOther" rows="3" maxlength="250" placeholder="예: 컵을 내릴 때 왼손이 자꾸 꼬여요."></textarea></div>
  <div class="toolRow" style="margin-top:20px"><button class="btn primary" id="coachCopyOpen" type="button">📋 기록 복사하고 코칭 프로젝트 열기</button><button class="btn outline" id="coachCopy" type="button">📋 기록만 복사</button><button class="btn outline" id="coachOpen" type="button">↗ 프로젝트만 열기</button></div>
@@ -115,7 +116,7 @@
 <div id="toast" class="toast hidden" role="status"></div>
 <script>
 (()=>{'use strict';
-const SCHOOLS=['신월중','경원중','감계중','반림중','진영중','자유학교'];
+const SCHOOLS=['신월중','경원중','감계중','반림중','진영중'];
 const EVENTS=['3-3-3','3-6-3','3-6-3C','6-6','1-10-1'];
 const OFFICIAL=EVENTS.slice(0,3);
 const PROJECT_URL='https://chatgpt.com/g/g-p-6acc54eb0960819187038bebe7afa218-seupideuseutaegseu-yeonseub-kocing-badgi/project';
@@ -124,7 +125,7 @@ const COACH_FOOTER='연습 방법과 목표는 반드시 체육선생님과 의�
 const DIFFICULTIES=[['drop','🥤 컵을 자꾸 떨어뜨려요'],['order','🔀 동작 순서가 헷갈려요'],['six','🏗️ 6컵·10컵 쌓기가 어려워요'],['down','⚡ 컵을 내릴 때 잘 안돼요'],['hands','🙌 양손 움직임이 잘 맞지 않아요'],['speed','🐢 속도가 잘 빨라지지 않아요'],['variable','🎯 기록이 일정하지 않아요'],['nerves','😰 측정할 때 긴장돼요'],['unknown','🤔 어디가 문제인지 모르겠어요'],['other','✏️ 기타 (직접 작성)']];
 const $=id=>document.getElementById(id);
 const pages=['home','choice','ai','teacher','nextstudent','result','coach'];
-let schoolPop={신월중:360,경원중:320,감계중:280,반림중:335,진영중:310,자유학교:45};
+let schoolPop={신월중:360,경원중:320,감계중:280,반림중:335,진영중:310};
 let users=[],records=[],session=null,teacherVerified=false,teacherSchool='',currentPage='home',lastMode='ai',lastRecord=null,lastResultEvent='',selectedEvent='3-3-3',saveMode='auto',rankMode='school',authMode='login',coachReturn='choice',coachSelections=[],cameraFacing='environment';
 let currentUserUid='',state='idle',stream=null,hands=null,cameraActive=false,cameraBusy=false,processing=false,cameraLoopId=0,handScriptPromise=null,clockStart=0,readyAt=0,leaveAt=0,returnAt=0,soundContext=null,testTimer=false,measureSource='AI',pendingMeasurement=null,autoSaveToken=0,frontMirror=false;
 let fakeCounter=0;
@@ -156,10 +157,17 @@ function rankData(){let valid=allRecords().filter(r=>r.valid!==false&&OFFICIAL.i
  let schools=SCHOOLS.map(s=>{const pop=Math.max(1,num(schoolPop[s]));const students=individuals.filter(p=>p.school===s),pnum=students.length;const record=25*students.reduce((a,x)=>a+x.overallScore,0)/(pop*100);const events=25*students.reduce((a,x)=>a+x.total,0)/(pop*300);const participation=50*Math.min(1,pnum/pop);return {school:s,pop,pnum,record,events,participation,total:record+events+participation};}).sort((a,b)=>b.total-a.total||a.school.localeCompare(b.school));return {bestByEvent,individuals,schools};}
 function td(value,cls){const e=document.createElement('td');if(cls)e.className=cls;e.textContent=value;return e;}function el(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;}
 function renderTable(columns,rows){const wrap=el('div','tableScroll'),table=el('table','rankTable'),thead=el('thead'),tr=el('tr');for(const c of columns)tr.append(el('th','',c));thead.append(tr);const tbody=el('tbody');for(const data of rows){const r=el('tr');data.forEach((s,i)=>r.append(td(s,i===0?'schoolCell':'')));tbody.append(r);}table.append(thead,tbody);wrap.append(table);return wrap;}
-function showRank(){const tabs=[['school','🏫 학교 종합'],['overall','🏅 개인 종합'],['3-3-3','🥤 3-3-3'],['3-6-3','⚡ 3-6-3'],['3-6-3C','🔥 사이클']];const holder=$('rankTabs');holder.replaceChildren();for(const [key,label] of tabs){const b=el('button','chip'+(rankMode===key?' active':''),label);b.type='button';b.addEventListener('click',()=>{rankMode=key;showRank();});holder.append(b);}
- const c=$('rankContent');c.replaceChildren();const rank=rankData();if(rankMode==='school'){const best=rank.schools.slice(0,3),tiles=el('div','scoreTiles');for(let i=0;i<3;i++){const t=el('div','scoreTile');t.append(el('span','',['🥇','🥈','🥉'][i]+' '+best[i].school),el('strong','',best[i].total.toFixed(1)+'점'));tiles.append(t);}c.append(tiles);let desktop=el('div','rankDesktop');desktop.append(renderTable(['순위','학교','개인종합 /25','종목별 /25','참여 /50','합계 /100'],rank.schools.map((r,i)=>[(i+1)+'위',r.school,r.record.toFixed(1),r.events.toFixed(1),r.participation.toFixed(1),r.total.toFixed(1)])));c.append(desktop);let mobile=el('div','rankMobile');for(const [i,r] of rank.schools.entries()){const box=el('div','rankMobileRow'),head=el('div','head'),name=el('span','',(['🥇','🥈','🥉'][i]||((i+1)+'위'))+' '+r.school),total=el('b','',r.total.toFixed(1)+'점'),breakdown=el('div','breakdown');breakdown.append(el('span','','🏅 종합 '+r.record.toFixed(1)),el('span','','⏱️ 종목 '+r.events.toFixed(1)),el('span','','🙌 참여 '+r.participation.toFixed(1)));head.append(name,total);box.append(head,breakdown);mobile.append(box);}c.append(mobile);}
- else if(rankMode==='overall')c.append(renderTable(['순위','닉네임 · 소속','3-3-3','3-6-3','사이클','개인합계 /300'],rank.individuals.slice(0,100).map(x=>[x.rank+'위',x.nick+' · '+x.school+' '+x.grade+'학년',fmtPoint(x.scores['3-3-3']),fmtPoint(x.scores['3-6-3']),fmtPoint(x.scores['3-6-3C']),x.total.toFixed(1)])));
- else c.append(renderTable(['순위','닉네임 · 소속','최고기록','순위환산점수'],rank.bestByEvent[rankMode].slice(0,100).map(x=>[x.rank+'위',(x.user?.nick||'')+' · '+(x.user?.school||'')+' '+(x.user?.grade||'')+'학년',fmt(x.sec)+'초',x.score.toFixed(1)+'점'])));}
+function showRank(){
+ const tabs=[['school','🏫 학교 종합'],['overall','🏅 개인 종합'],['3-3-3','🥤 3-3-3'],['3-6-3','⚡ 3-6-3'],['3-6-3C','🔥 사이클']];
+ const holder=$('rankTabs');holder.replaceChildren();for(const [key,name] of tabs){const bt=el('button','chip'+(rankMode===key?' active':''),name);bt.type='button';bt.onclick=()=>{rankMode=key;showRank();};holder.append(bt);}
+ const c=$('rankContent');c.replaceChildren();const d=rankData(),limit=rankMode==='school'?3:5;let columns=[],rows=[];
+ if(rankMode==='school'){columns=['순위','학교','개인종합 /25','종목별 /25','참여 /50','합계 /100'];rows=d.schools.map((x,i)=>[(i+1)+'위',x.school,x.record.toFixed(1),x.events.toFixed(1),x.participation.toFixed(1),x.total.toFixed(1)]);}
+ else if(rankMode==='overall'){columns=['순위','닉네임 · 소속','3-3-3','3-6-3','사이클','개인합계 /300'];rows=d.individuals.map(x=>[x.rank+'위',x.nick+' · '+x.school+' '+x.grade+'학년',fmtPoint(x.scores['3-3-3']),fmtPoint(x.scores['3-6-3']),fmtPoint(x.scores['3-6-3C']),x.total.toFixed(1)]);}
+ else{columns=['순위','닉네임 · 소속','최고기록','순위환산점수'];rows=d.bestByEvent[rankMode].map(x=>[x.rank+'위',(x.user?.nick||'')+' · '+(x.user?.school||'')+' '+(x.user?.grade||'')+'학년',fmt(x.sec)+'초',x.score.toFixed(1)+'점']);}
+ const tiles=el('div','scoreTiles');for(const [i,row] of rows.slice(0,limit).entries()){const tile=el('div','scoreTile');tile.append(el('span','',(['🥇','🥈','🥉','4️⃣','5️⃣'][i]||'')+' '+row[0]),el('strong','',rankMode==='school'?row[1]:row[1].split(' · ')[0]),el('span','',row[row.length-1]+(rankMode==='school'||rankMode==='overall'?'점':'')));tiles.append(tile);}if(rows.length)c.append(tiles);else c.append(el('p','hint','아직 등록된 기록이 없습니다.'));
+ if(rows.length>limit){const details=el('details','rankExtra'),summary=el('summary','', '↕ '+(limit+1)+'위부터 스크롤로 확인 ('+(rows.length-limit)+'명/학교)');const scroll=el('div','rankExtraScroll');scroll.append(renderTable(columns,rows.slice(limit)));details.append(summary,scroll);c.append(details);}
+ if(rankMode!=='school'&&currentUserUid){const p=rankMode==='overall'?d.individuals.find(x=>x.uid===currentUserUid):d.bestByEvent[rankMode].find(x=>x.uid===currentUserUid);const box=el('div','myRank');box.append(el('strong','','🙋 내 순위: '+(p?p.rank+'위':'기록 없음')));if(p)box.append(el('span','',rankMode==='overall'?p.total.toFixed(1)+'점':fmt(p.sec)+'초'));c.append(box);}
+}
 function fmtPoint(n){return n?Number(n).toFixed(1):'미참가';}
 function renderChoice(){holdIdentity();const u=currentUser();let ranking=rankData().individuals.find(x=>x.uid===u?.uid);const box=$('choiceSummary');box.replaceChildren();for(const e of OFFICIAL){const t=el('div','scoreTile');t.append(el('strong','',ranking&&ranking.scores[e]?ranking.scores[e].toFixed(1)+'점':'—'),el('span','',e));box.append(t);}}
 function listEvents(target){target.replaceChildren();for(const e of EVENTS){const b=el('button','eventBtn'+(e===selectedEvent?' active':''));b.type='button';b.innerHTML='<b></b><span></span>';b.firstChild.textContent=e;b.lastChild.textContent=OFFICIAL.includes(e)?'공식 리그':'연습용';b.addEventListener('click',()=>{if(currentPage==='ai'&&state==='running'){toast('측정 중에는 종목을 변경할 수 없습니다.');return;}selectedEvent=e;closeAiHistory();pendingMeasurement=null;$('cameraPending').classList.add('hidden');updateCameraState('search','🥤 '+e+' 준비 중 · 양손을 시작 위치로!',false);listEvents($('aiEvents'));listEvents($('teacherEvents'));});target.append(b);}}
@@ -216,7 +224,7 @@ function toggleAiHistory(){
   button.setAttribute('aria-expanded',String(nextOpen));
   setText('aiHistoryArrow',nextOpen?'▴':'▾');
 }
-function plotHistory(points,targetId='resultGraph'){const node=$(targetId);node.replaceChildren();if(!points.length){node.textContent='기록이 아직 없습니다.';return;}const arr=points.slice().reverse().slice(-10),width=460,height=205,pad={l:44,r:15,t:18,b:34};let vals=arr.map(p=>p.sec),min=Math.min(...vals),max=Math.max(...vals);let range=Math.max(.6,max-min);min-=range*.2;max+=range*.2;let sx=i=>pad.l+(width-pad.l-pad.r)*(arr.length===1?.5:i/(arr.length-1)),sy=v=>pad.t+(height-pad.t-pad.b)*(max-v)/(max-min);let ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox',`0 0 ${width} ${height}`);svg.setAttribute('class','graphSvg');svg.setAttribute('role','img');svg.setAttribute('aria-label','최근 기록의 시간 변화 그래프');function nodeSvg(tag,attrs,text){let n=document.createElementNS(ns,tag);for(const [k,v] of Object.entries(attrs))n.setAttribute(k,v);if(text!==undefined)n.textContent=text;svg.append(n);return n;}
+function plotHistory(points,targetId='resultGraph',all=false){const node=$(targetId);node.replaceChildren();if(!points.length){node.textContent='기록이 아직 없습니다.';return;}const arr=(all?points.slice().reverse():points.slice().reverse().slice(-10)),width=460,height=205,pad={l:44,r:15,t:18,b:34};let vals=arr.map(p=>p.sec),min=Math.min(...vals),max=Math.max(...vals);let range=Math.max(.6,max-min);min-=range*.2;max+=range*.2;let sx=i=>pad.l+(width-pad.l-pad.r)*(arr.length===1?.5:i/(arr.length-1)),sy=v=>pad.t+(height-pad.t-pad.b)*(max-v)/(max-min);let ns='http://www.w3.org/2000/svg',svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox',`0 0 ${width} ${height}`);svg.setAttribute('class','graphSvg');svg.setAttribute('role','img');svg.setAttribute('aria-label','최근 기록의 시간 변화 그래프');function nodeSvg(tag,attrs,text){let n=document.createElementNS(ns,tag);for(const [k,v] of Object.entries(attrs))n.setAttribute(k,v);if(text!==undefined)n.textContent=text;svg.append(n);return n;}
  for(let i=0;i<=3;i++){const y=pad.t+(height-pad.t-pad.b)*i/3;nodeSvg('line',{x1:pad.l,y1:y,x2:width-pad.r,y2:y,stroke:'#f2dbc5','stroke-dasharray':'4 4'});nodeSvg('text',{x:pad.l-8,y:y+4,'text-anchor':'end',fill:'#94745e','font-size':'11'},(max-(max-min)*i/3).toFixed(1));}
  let d=arr.map((r,i)=>(i?'L':'M')+sx(i).toFixed(1)+','+sy(r.sec).toFixed(1)).join(' ');nodeSvg('path',{d,fill:'none',stroke:'#ff6d2c','stroke-width':'4','stroke-linecap':'round','stroke-linejoin':'round'});arr.forEach((r,i)=>{nodeSvg('circle',{cx:sx(i),cy:sy(r.sec),r:5.5,fill:'#ffba35',stroke:'#f26522','stroke-width':2});nodeSvg('text',{x:sx(i),y:height-11,'text-anchor':'middle',fill:'#9e7b60','font-size':'10'},String(i+1));});node.append(svg);}
 function renderResult(){const u=currentUser(),rec=lastRecord||{event:lastResultEvent,sec:0,source:''},list=recordForUser(currentUserUid,rec.event),best=list.slice().sort((a,b)=>a.sec-b.sec||new Date(a.at)-new Date(b.at)).slice(0,5);const rank=rankData().bestByEvent[rec.event]?.find(x=>x.uid===currentUserUid);setText('resultEvent',rec.event+' · '+(OFFICIAL.includes(rec.event)?'리그 종목':'연습 종목'));setText('resultSource',rec.source+' · 시안');$('resultTime').innerHTML='';$('resultTime').append(document.createTextNode(fmt(rec.sec)),el('small','','초'));setText('resultBest',best.length?fmt(best[0].sec)+'초':'—');setText('resultCount',list.length+'회');setText('resultRank',rank?rank.rank+'위':'연습 종목');let newBest=best.length&&rec.id===best[0].id;setText('resultCongrats',newBest?'🏆 최고기록 갱신! 나 자신을 이겼어요!':'🌟 끝까지 도전한 모습이 멋져요!');
@@ -233,11 +241,13 @@ function nextStudent(){if(!teacherVerified){toast('교사 세션이 종료됐습
 async function nextStudentLogin(evt){evt.preventDefault();const nick=$('nextStudentNick').value.trim(),pin=$('nextStudentPin').value;try{let user=users.find(u=>u.school===teacherSchool&&accountKey(u.school,u.nick)===accountKey(teacherSchool,nick));if(!user||!(await checkPin(user,pin))){toast('닉네임과 비밀번호를 확인해 주세요.');return;}currentUserUid=user.uid;session={uid:user.uid};holdIdentity();lastMode='teacher';openTeacher();toast('✅ '+user.nick+' 학생의 계정이 확인되었습니다.');}catch(e){toast(e.message);}}
 function showCoach(){if(!currentUser()){showPage('home');return;}coachReturn=currentPage==='result'?'result':currentPage==='teacher'?'teacher':'choice';holdIdentity();const sel=$('coachEvent');if(!sel.options.length)selectOptions(sel,EVENTS);sel.value=lastResultEvent||selectedEvent;coachSelections=[];renderCoachOptions();renderCoachPreview();showPage('coach');}
 function renderCoachOptions(){const c=$('coachOptions');c.replaceChildren();DIFFICULTIES.forEach(([k,label])=>{let b=el('button','coachOpt'+(coachSelections.includes(k)?' active':''));b.type='button';b.textContent=(coachSelections.includes(k)?'☑ ':'☐ ')+label;b.addEventListener('click',()=>{if(coachSelections.includes(k))coachSelections=coachSelections.filter(x=>x!==k);else if(coachSelections.length<2)coachSelections.push(k);else{toast('어려움은 최대 2개까지 선택할 수 있어요.');return;}renderCoachOptions();});c.append(b);});$('coachOtherArea').classList.toggle('hidden',!coachSelections.includes('other'));}
-function renderCoachPreview(){let e=$('coachEvent').value,rec=recordForUser(currentUserUid,e),best=rec.slice().sort((a,b)=>a.sec-b.sec).slice(0,5);const c=$('coachPreview');c.replaceChildren();let title=el('strong','',e+' · 나의 기록 요약');c.append(title);if(!rec.length)c.append(el('p','', '아직 기록이 없습니다. 첫 측정을 완료한 후 도전해 보세요! 🐣'));else{const lines=['총 측정 '+rec.length+'회','현재 저장 최고기록 '+fmt(best[0].sec)+'초','최고기록 TOP 5: '+best.map(x=>fmt(x.sec)).join(' / ')+'초','최근 5회: '+rec.slice(0,5).reverse().map(x=>fmt(x.sec)).join(' → ')+'초'];lines.forEach(t=>c.append(el('div','',t)));}}
+function renderCoachPreview(){ $('coachRecords').classList.add('hidden');let e=$('coachEvent').value,rec=recordForUser(currentUserUid,e),best=rec.slice().sort((a,b)=>a.sec-b.sec).slice(0,5);const c=$('coachPreview');c.replaceChildren();let title=el('strong','',e+' · 나의 기록 요약');c.append(title);if(!rec.length)c.append(el('p','', '아직 기록이 없습니다. 첫 측정을 완료한 후 도전해 보세요! 🐣'));else{const lines=['총 측정 '+rec.length+'회','현재 저장 최고기록 '+fmt(best[0].sec)+'초','최고기록 TOP 5: '+best.map(x=>fmt(x.sec)).join(' / ')+'초','최근 5회: '+rec.slice(0,5).reverse().map(x=>fmt(x.sec)).join(' → ')+'초'];lines.forEach(t=>c.append(el('div','',t)));}}
+function renderCoachRecords(){const e=$('coachEvent').value,list=recordForUser(currentUserUid,e),best=list.slice().sort((a,b)=>a.sec-b.sec).slice(0,5);const box=$('coachBest5');box.replaceChildren();if(!best.length)box.append(el('p','hint','아직 기록이 없습니다.'));for(const [i,r] of best.entries()){const row=el('div','topRow');row.append(el('span','',(i+1)+'위 · '+new Date(r.at).toLocaleDateString('ko-KR')),el('b','',fmt(r.sec)+'초'));box.append(row);}plotHistory(list,'coachGraph',true);$('coachRecords').classList.remove('hidden');}
 function coachText(){const ev=$('coachEvent').value,recs=recordForUser(currentUserUid,ev),best=recs.slice().sort((a,b)=>a.sec-b.sec).slice(0,5),sel=coachSelections.map(k=>k==='other'?$('coachOther').value.trim():DIFFICULTIES.find(x=>x[0]===k)?.[1]).filter(Boolean);if(coachSelections.includes('other')&&!$('coachOther').value.trim()){toast('기타 어려움을 한두 문장으로 입력해 주세요.');return '';}
  const lines=['너는 중학생 스포츠스태킹 AI 연습 코치야. 다음 학생의 개인 기록을 분석해 줘.','개인정보는 포함하지 않았어.','종목: '+ev,'최근 측정 횟수: '+recs.length+'회','최고기록 TOP 5: '+(best.length?best.map(r=>fmt(r.sec)+'초').join(', '):'없음'),'최근 기록(오래된 순): '+(recs.length?recs.slice(0,10).reverse().map(r=>fmt(r.sec)+'초').join(', '):'없음'),'학생이 직접 선택한 어려움: '+(sel.length?sel.join(' / '):'아직 선택하지 않음'),'', '반드시 다음을 지켜 줘.','1. 기록을 바탕으로 긍정적이고 구체적인 성장을 칭찬하고, 확실한 사실과 추정을 구분해.','2. 학생의 선택과 종목에 맞는 연습 방법 2가지를 정확한 동작·순서·횟수·목적과 함께 제시해.','3. 학생의 실천 가능한 다음 목표를 1개 제시해.','4. 귀여운 이모지, 간단한 표·그래프를 활용해 휴대폰에서 한눈에 알아보도록 해.','5. 컵 떨어짐·손동작 오류·규칙 위반은 기록만으로 확인했다고 단정하지 마.','6. 학생이 어디가 문제인지 모르겠다고 했으면 반드시 체육선생님께 실제 동작을 보여주고 질문하라고 안내하며, 선생님께 여쭤볼 질문을 직접 만들어 줘.','7. 다른 어려움에서도 체육선생님께 점검할 구체적인 질문을 제시해.','8. 언제나 맨 마지막 문장은 다음 문장을 그대로 사용해: '+COACH_FOOTER];return lines.join('\n');}
 async function copyCoach(openProject){
   const message=coachText();if(!message)return;
+  const coachTab=openProject?window.open('about:blank','_blank'):null;
   let copied=false;
   try{if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(message);copied=true;}}catch(error){}
   if(!copied){
@@ -247,11 +257,11 @@ async function copyCoach(openProject){
     try{copied=document.execCommand('copy');}catch(error){}
     ta.remove();
   }
-  if(!copied){toast('📋 자동 복사가 차단되었습니다. 「기록만 복사」를 먼저 눌러 주세요.');return;}
+  if(!copied){if(coachTab&&!coachTab.closed)coachTab.close();toast('📋 복사가 차단되었습니다. 기록만 복사를 이용해 주세요.');return;}
   if(openProject){
     // 모바일 팝업 차단을 피하기 위해 복사 성공 후 같은 창에서 프로젝트로 이동
     toast('✅ 기록 복사 완료! 코칭 프로젝트로 이동합니다.');
-    window.location.assign(PROJECT_URL);
+    if(coachTab&&!coachTab.closed)coachTab.location.replace(PROJECT_URL);else toast('📋 복사 완료! 팝업 차단 시 프로젝트만 열기를 이용해 주세요.');
   }else{
     toast('✅ 기록을 복사했어요! 코칭 프로젝트에 붙여넣어 주세요.');
   }
@@ -262,7 +272,7 @@ function setup(){load();selectOptions($('authSchool'),SCHOOLS,'학교를 선택�
  $('teacherUnlock').addEventListener('click',teacherUnlock);$('teacherSave').addEventListener('click',saveTeacher);$('teacherSettings').addEventListener('click',populationPanel);$('populationSave').addEventListener('click',savePopulation);
  $('cameraToggle').addEventListener('click',()=>cameraActive?stopCamera():cameraStart());$('cameraFlip').addEventListener('click',async()=>{if(state==='running'){toast('측정 중 카메라는 전환할 수 없습니다.');return;}cameraFacing=cameraFacing==='user'?'environment':'user';if(cameraActive){stopCamera();await cameraStart();}});$('cameraSoundTest').addEventListener('click',()=>{audio();playSignal('ready');setTimeout(()=>playSignal('end'),1100);toast('🔊 준비음 → 종료음 순서로 재생합니다.');});$('soundVolume').addEventListener('input',e=>setText('soundVolumeLabel',e.target.value+'%'));$('cameraReset').addEventListener('click',cameraReset);$('pendingSave').addEventListener('click',()=>saveMeasurement(pendingMeasurement));$('pendingDiscard').addEventListener('click',()=>{pendingMeasurement=null;$('cameraPending').classList.add('hidden');cameraReset();toast('저장하지 않고 새 측정을 준비합니다.');});$('testStart').addEventListener('click',()=>{if(state==='running'){toast('이미 측정 중입니다.');return;}audio();cameraReset();testTimer=true;playSignal('ready');beginTiming('test');const f=()=>{if(state==='running'&&testTimer){setText('cameraTime',fmt((performance.now()-clockStart)/1000));requestAnimationFrame(f);}};requestAnimationFrame(f);});$('testStop').addEventListener('click',()=>finishTiming('test'));
  $('aiHistoryToggle').addEventListener('click',toggleAiHistory);
- $('coachCopyOpen').addEventListener('click',()=>copyCoach(true));$('coachCopy').addEventListener('click',()=>copyCoach(false));$('coachOpen').addEventListener('click',()=>window.open(PROJECT_URL,'_blank','noopener,noreferrer'));
+ $('coachShowRecords').addEventListener('click',renderCoachRecords);$('coachCopyOpen').addEventListener('click',()=>copyCoach(true));$('coachCopy').addEventListener('click',()=>copyCoach(false));$('coachOpen').addEventListener('click',()=>window.open(PROJECT_URL,'_blank','noopener,noreferrer'));
  window.addEventListener('pagehide',stopCamera);document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='running')stopCamera();});
 }
 setup();
