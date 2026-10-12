@@ -2,7 +2,8 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#ff6a1a">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#101720">
 <title>2026년 2학기 스포츠 스태킹 온라인 리그전 · 1차 시안</title>
 <style>
 :root{--ink:#253044;--muted:#637083;--cream:#fff8ed;--white:#fff;--orange:#ff681f;--gold:#ffbc24;--red:#f24948;--mint:#2dbd8a;--shadow:0 12px 36px rgba(166,75,21,.11);--line:#f1e1d0;--round:24px;font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif}
@@ -19,6 +20,57 @@
 .aiHistoryPanel .historyRow b{color:#e65c23}
 .aiHistoryPanel .hint{font-size:12px;color:#816952}
 .rankExtra{margin-top:14px;border:1px solid #eed8c2;border-radius:15px;padding:12px;background:#fffdf8}.rankExtra>summary{font-weight:850;color:#ad501b;cursor:pointer;padding:10px}.rankExtraScroll{max-height:320px;overflow:auto;overscroll-behavior:contain}.myRank{display:flex;justify-content:space-between;padding:14px;border:1px solid #ffbf73;border-radius:13px;background:#ffedcf;margin-top:12px}.scoreTile strong{font-size:clamp(14px,2vw,21px);overflow-wrap:anywhere}
+
+/* 전체 화면 다크 테마와 읽기 편한 둥근 글꼴 */
+:root{--ink:#f2f5f8;--muted:#c0cad5;--cream:#111923;--white:#1b2632;--shadow:0 14px 36px rgba(0,0,0,.28);--line:#354455;font-family:'Jua','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif}
+body{background:#101720;color:#f2f5f8;font-size:16px}
+.hero{background:linear-gradient(135deg,#1b2735 0%,#25394b 58%,#344353 100%);border:1px solid #40546a;box-shadow:0 18px 42px rgba(0,0,0,.32)}
+.hero:after{opacity:.2}.heroPills span{background:#1a2734;color:#ffd18a;border:1px solid #526274}
+.demo{background:#272515;border-color:#66582d;color:#f2dda2}
+.card,.card.soft{background:#1a2531;border-color:#334252;color:#f2f5f8;box-shadow:var(--shadow)}
+.card.soft{background:#1d2935}
+.sub,.hint,.field .helper{color:#c0cad5}
+.pill,.badge,.tag{background:#342b20;color:#ffd28c;border-color:#67502f}
+.chip,.btn.outline{background:#24313e;color:#ecf1f6;border-color:#45596d}
+.chip.active{background:linear-gradient(135deg,#ff6a20,#ff9940);color:#fff;border-color:transparent}
+.scoreTile{background:#24313e;border-color:#3a4d60}.scoreTile span{color:#c0cad5}
+.tableScroll{border-color:#3a4b5d}.rankTable{color:#e9eef4}.rankTable th{background:#283746;color:#f2c98c}.rankTable td{border-color:#334252}.rankTable tbody tr:nth-child(odd){background:#202c38}.rankTable tbody tr:nth-child(even){background:#1a2531}.rankTable .muted{color:#b7c2ce}
+.field input,.field select,.field textarea{background:#111a23;color:#f2f5f8;border-color:#45596d}
+.field input::placeholder,.field textarea::placeholder{color:#98a7b7}
+.field select option{background:#17212b;color:#f2f5f8}
+.btn.dark{background:#0e151d;color:#f2f5f8}
+.btn.gold{background:linear-gradient(105deg,#ffc12c,#ffdf60);color:#33230a}
+.identity{background:#24313e;border-color:#45596d;color:#f0d5ad}
+.optionCard{background:#202c38;border-color:#3d5063;color:#f2f5f8}.optionCard:hover{background:#293847;border-color:#ffad59}
+.optionCard p{color:#c0cad5}
+.eventBtn{background:#202c38;color:#e9eef4;border-color:#46596b}.eventBtn.active{background:#ff6724;color:#fff;border-color:#ff6724}
+.modeChoice{background:#202c38;color:#f2f5f8;border-color:#415365}.modeChoice small{color:#c0cad5}.modeChoice.active{background:#3a3023;border-color:#ff9b47}
+.cameraShell{background:#101923}
+.status{background:#302a20;color:#f5dba9}.status.good{background:#123a2c;color:#b7f2ce}.status.live{background:#48271f;color:#ffd0bc}
+.dangerNote{background:#302a20;color:#f4dfaf;border-color:#665331}
+.resultHero{background:#273341;border-color:#685336}.resultHero .congrats{color:#ffc27d}
+.panel{background:#202c38;border-color:#3a4d60}
+.topRow,.historyRow{border-color:#374757}.topRow b,.aiHistoryPanel .historyRow b{color:#ffad71}
+.coachOpt{background:#202c38;border-color:#415365;color:#f2f5f8}.coachOpt.active{background:#3a3023;border-color:#ff8b50}
+.coachBox{background:#292b29;color:#f2f5f8}.coachBox strong{color:#ffc080}
+.foot{color:#aab6c3}.teacherTag{background:#342b20;color:#ffd28c}
+.rankMobileRow{background:#202c38;border-color:#3a4d60}.rankMobileRow .breakdown{color:#c0cad5}
+.aiHistoryToggle,.rankExtra,.rankExtra>summary,.myRank{background:#24313e;color:#f2f5f8;border-color:#46596b}
+.aiHistoryToggle[aria-expanded="true"]{background:#3a3023;border-color:#ff9b47}
+.aiHistoryPanel{background:#202c38}.aiHistoryPanel .historyRow span,.aiHistoryPanel .hint{color:#c0cad5}
+.rankExtra{background:#202c38}.rankExtra>summary{color:#ffd28c}.rankExtraScroll{color:#e9eef4}
+.myRank{background:#342b20;border-color:#80623a}
+.linkText{color:#ffc080}
+.coachPasteHint{margin:8px 0 12px;color:#ffd28c;font-size:15px;font-weight:800}
+.graphSvg text{fill:#d0dae4!important}.graphSvg line{stroke:#495969!important}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline-color:#ffbd65}
+h2{font-size:24px}h3{font-size:19px}.sub{font-size:14px}.hint{font-size:13px}
+.field label,.fieldLabel{font-size:14px}.field .helper{font-size:12px}
+.chip{font-size:14px}.eventBtn b{font-size:18px}.eventBtn span{font-size:12px}
+.optionCard p{font-size:13px}.coachOpt{font-size:13px}.rankTable{font-size:14px}.rankTable th{font-size:13px}
+.foot{font-size:13px}
+@media(max-width:760px){.card h2{font-size:21px}.optionCard p{font-size:13px}.hero h1{font-size:28px}}
+
 </style>
 </head>
 <body>
@@ -107,7 +159,8 @@
  <div class="field"><label for="coachEvent">🥤 코칭받을 종목</label><select id="coachEvent"></select></div><button class="btn primary block" id="coachShowRecords" type="button" style="margin-bottom:12px">📈 선택 종목 기록 확인</button><div id="coachRecords" class="panel hidden"><h3>📈 기록 누적 그래프</h3><div id="coachGraph"></div><h3>🏅 BEST 5 기록</h3><div id="coachBest5"></div></div><div id="coachPreview" class="coachBox"></div>
  <h3 style="margin:23px 0 8px">🤔 어떤 부분이 어려웠나요?</h3><p class="hint">최대 2개를 선택하세요. 다른 내용이라면 기타에 직접 적어주세요.</p><div class="coachOptions" id="coachOptions"></div>
  <div class="field hidden" id="coachOtherArea" style="margin-top:14px"><label for="coachOther">✏️ 기타 어려움</label><textarea id="coachOther" rows="3" maxlength="250" placeholder="예: 컵을 내릴 때 왼손이 자꾸 꼬여요."></textarea></div>
- <div class="toolRow" style="margin-top:20px"><button class="btn primary" id="coachCopyOpen" type="button">📋 기록 복사하고 ChatGPT 열기</button><button class="btn outline" id="coachCopy" type="button">📋 기록만 복사</button><button class="btn outline" id="coachOpen" type="button">↗ ChatGPT만 열기</button></div>
+ <div class="toolRow" style="margin-top:20px"><button class="btn primary" id="coachCopyOpen" type="button">📋 기록 복사하고 AI 코칭 받아보기</button><button class="btn outline" id="coachCopy" type="button">📋 기록만 복사</button><button class="btn outline" id="coachOpen" type="button">↗ ChatGPT만 열기</button></div>
+ <p class="coachPasteHint">💡 (복사된 내용을 입력창에 입력해 주세요.)</p>
  <div class="dangerNote">🔒 이름·학번·학교명·비밀번호는 코칭 요청문에 포함되지 않습니다. 복사한 내용을 일반 ChatGPT 채팅창에 붙여넣고 전송하세요. 로그아웃 상태에서는 대화가 저장되지 않으며, 맞춤 GPT 이용에는 로그인이 필요합니다. 개인정보를 입력하지 마세요.</div>
  <p style="font-size:13px;font-weight:850;color:#9c4d1e">👩‍🏫 연습 방법과 목표는 반드시 체육선생님과 의논하고 피드백을 받으세요.</p>
  </div></section>
@@ -209,7 +262,7 @@ function showRank(){
 }
 function fmtPoint(n){return n?Number(n).toFixed(1):'미참가';}
 function renderChoice(){holdIdentity();const u=currentUser();let ranking=rankData().individuals.find(x=>x.uid===u?.uid);const box=$('choiceSummary');box.replaceChildren();for(const e of OFFICIAL){const t=el('div','scoreTile');t.append(el('strong','',ranking&&ranking.scores[e]?ranking.scores[e].toFixed(1)+'점':'—'),el('span','',e));box.append(t);}}
-function listEvents(target){target.replaceChildren();for(const e of EVENTS){const b=el('button','eventBtn'+(e===selectedEvent?' active':''));b.type='button';b.innerHTML='<b></b><span></span>';b.firstChild.textContent=e;b.lastChild.textContent=OFFICIAL.includes(e)?'공식 리그':'연습용';b.addEventListener('click',()=>{if(currentPage==='ai'&&state==='running'){toast('측정 중에는 종목을 변경할 수 없습니다.');return;}selectedEvent=e;closeAiHistory();pendingMeasurement=null;$('cameraPending').classList.add('hidden');updateCameraState('search','🥤 '+e+' 준비 중 · 양손을 시작 위치로!',false);listEvents($('aiEvents'));listEvents($('teacherEvents'));});target.append(b);}}
+function listEvents(target){target.replaceChildren();for(const e of EVENTS){const b=el('button','eventBtn'+(e===selectedEvent?' active':''));b.type='button';b.innerHTML='<b></b><span></span>';b.firstChild.textContent='🥤 '+e;b.lastChild.textContent=OFFICIAL.includes(e)?'🏆 공식 리그':'🎯 연습용';b.addEventListener('click',()=>{if(currentPage==='ai'&&state==='running'){toast('측정 중에는 종목을 변경할 수 없습니다.');return;}selectedEvent=e;closeAiHistory();pendingMeasurement=null;$('cameraPending').classList.add('hidden');updateCameraState('search','🥤 '+e+' 준비 중 · 양손을 시작 위치로!',false);listEvents($('aiEvents'));listEvents($('teacherEvents'));});target.append(b);}}
 function choose(n){if(!currentUser()){showPage('home');return;}lastMode=n;if(n==='ai'){teacherVerified=false;teacherSchool='';saveMode='auto';renderMode();selectedEvent='3-3-3';listEvents($('aiEvents'));closeAiHistory();setText('cameraTime','0.000');cameraStatus('카메라를 켜고 측정을 준비해 주세요.');showPage('ai');}
  else if(n==='teacher'){teacherSchool=currentUser().school;teacherVerified=false;$('teacherGate').classList.remove('hidden');$('teacherEntry').classList.add('hidden');$('teacherCode').value='';selectedEvent='3-3-3';listEvents($('teacherEvents'));showPage('teacher');}}
 function renderMode(){document.querySelectorAll('[data-save-mode]').forEach(e=>e.classList.toggle('active',e.dataset.saveMode===saveMode));}
