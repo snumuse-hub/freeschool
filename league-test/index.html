@@ -107,8 +107,8 @@
  <div class="field"><label for="coachEvent">🥤 코칭받을 종목</label><select id="coachEvent"></select></div><button class="btn primary block" id="coachShowRecords" type="button" style="margin-bottom:12px">📈 선택 종목 기록 확인</button><div id="coachRecords" class="panel hidden"><h3>📈 기록 누적 그래프</h3><div id="coachGraph"></div><h3>🏅 BEST 5 기록</h3><div id="coachBest5"></div></div><div id="coachPreview" class="coachBox"></div>
  <h3 style="margin:23px 0 8px">🤔 어떤 부분이 어려웠나요?</h3><p class="hint">최대 2개를 선택하세요. 다른 내용이라면 기타에 직접 적어주세요.</p><div class="coachOptions" id="coachOptions"></div>
  <div class="field hidden" id="coachOtherArea" style="margin-top:14px"><label for="coachOther">✏️ 기타 어려움</label><textarea id="coachOther" rows="3" maxlength="250" placeholder="예: 컵을 내릴 때 왼손이 자꾸 꼬여요."></textarea></div>
- <div class="toolRow" style="margin-top:20px"><button class="btn primary" id="coachCopyOpen" type="button">📋 기록 복사하고 코칭 프로젝트 열기</button><button class="btn outline" id="coachCopy" type="button">📋 기록만 복사</button><button class="btn outline" id="coachOpen" type="button">↗ 프로젝트만 열기</button></div>
- <div class="dangerNote">🔒 이름·학번·학교명·비밀번호는 코칭 요청문에 포함되지 않습니다. 직접 붙여넣어 전송해야 하며, 공유 프로젝트의 대화는 다른 구성원에게 보일 수 있습니다. 개인정보를 입력하지 마세요.</div>
+ <div class="toolRow" style="margin-top:20px"><button class="btn primary" id="coachCopyOpen" type="button">📋 기록 복사하고 ChatGPT 열기</button><button class="btn outline" id="coachCopy" type="button">📋 기록만 복사</button><button class="btn outline" id="coachOpen" type="button">↗ ChatGPT만 열기</button></div>
+ <div class="dangerNote">🔒 이름·학번·학교명·비밀번호는 코칭 요청문에 포함되지 않습니다. 복사한 내용을 일반 ChatGPT 채팅창에 붙여넣고 전송하세요. 로그아웃 상태에서는 대화가 저장되지 않으며, 맞춤 GPT 이용에는 로그인이 필요합니다. 개인정보를 입력하지 마세요.</div>
  <p style="font-size:13px;font-weight:850;color:#9c4d1e">👩‍🏫 연습 방법과 목표는 반드시 체육선생님과 의논하고 피드백을 받으세요.</p>
  </div></section>
 </main><div class="foot" id="footerStatus">🥤 2026 스포츠 스태킹 온라인 리그전 · GAS 연결 전 테스트 모드</div>
@@ -119,7 +119,7 @@
 const SCHOOLS=['신월중','경원중','감계중','반림중','진영중','자유학교'];
 const EVENTS=['3-3-3','3-6-3','3-6-3C','6-6','1-10-1'];
 const OFFICIAL=EVENTS.slice(0,3);
-const PROJECT_URL='https://chatgpt.com/g/g-p-6acc54eb0960819187038bebe7afa218-seupideuseutaegseu-yeonseub-kocing-badgi/project';
+const CHATGPT_URL='https://chatgpt.com/';
 const STORE='stacking-league-2026-demo-v1';
 const GAS_URL='https://script.google.com/macros/s/AKfycbyhzYxs38a9mAjS8KFtdsHWS0wH241XEazyu5ARm2dRdI_na0NU2HaJ8zyDGUQpbHQ/exec'; // Google Apps Script 웹 앱
 const REMOTE=GAS_URL.startsWith('https://script.google.com/macros/s/');
@@ -289,25 +289,35 @@ function renderCoachPreview(){ $('coachRecords').classList.add('hidden');let e=$
 function renderCoachRecords(){const e=$('coachEvent').value,list=recordForUser(currentUserUid,e),best=list.slice().sort((a,b)=>a.sec-b.sec).slice(0,5);const box=$('coachBest5');box.replaceChildren();if(!best.length)box.append(el('p','hint','아직 기록이 없습니다.'));for(const [i,r] of best.entries()){const row=el('div','topRow');row.append(el('span','',(i+1)+'위 · '+new Date(r.at).toLocaleDateString('ko-KR')),el('b','',fmt(r.sec)+'초'));box.append(row);}plotHistory(list,'coachGraph',true);$('coachRecords').classList.remove('hidden');}
 function coachText(){const ev=$('coachEvent').value,recs=recordForUser(currentUserUid,ev),best=recs.slice().sort((a,b)=>a.sec-b.sec).slice(0,5),sel=coachSelections.map(k=>k==='other'?$('coachOther').value.trim():DIFFICULTIES.find(x=>x[0]===k)?.[1]).filter(Boolean);if(coachSelections.includes('other')&&!$('coachOther').value.trim()){toast('기타 어려움을 한두 문장으로 입력해 주세요.');return '';}
  const lines=['너는 중학생 스포츠스태킹 AI 연습 코치야. 다음 학생의 개인 기록을 분석해 줘.','개인정보는 포함하지 않았어.','종목: '+ev,'최근 측정 횟수: '+recs.length+'회','최고기록 TOP 5: '+(best.length?best.map(r=>fmt(r.sec)+'초').join(', '):'없음'),'최근 기록(오래된 순): '+(recs.length?recs.slice(0,10).reverse().map(r=>fmt(r.sec)+'초').join(', '):'없음'),'학생이 직접 선택한 어려움: '+(sel.length?sel.join(' / '):'아직 선택하지 않음'),'', '반드시 다음을 지켜 줘.','1. 기록을 바탕으로 긍정적이고 구체적인 성장을 칭찬하고, 확실한 사실과 추정을 구분해.','2. 학생의 선택과 종목에 맞는 연습 방법 2가지를 정확한 동작·순서·횟수·목적과 함께 제시해.','3. 학생의 실천 가능한 다음 목표를 1개 제시해.','4. 귀여운 이모지, 간단한 표·그래프를 활용해 휴대폰에서 한눈에 알아보도록 해.','5. 컵 떨어짐·손동작 오류·규칙 위반은 기록만으로 확인했다고 단정하지 마.','6. 학생이 어디가 문제인지 모르겠다고 했으면 반드시 체육선생님께 실제 동작을 보여주고 질문하라고 안내하며, 선생님께 여쭤볼 질문을 직접 만들어 줘.','7. 다른 어려움에서도 체육선생님께 점검할 구체적인 질문을 제시해.','8. 언제나 맨 마지막 문장은 다음 문장을 그대로 사용해: '+COACH_FOOTER];return lines.join('\n');}
-async function copyCoach(openProject){
+async function copyCoach(openChat){
   const message=coachText();if(!message)return;
-  const coachTab=openProject?window.open('about:blank','_blank'):null;
+  // 클릭 직후 일반 ChatGPT를 열어 팝업 차단을 줄입니다.
+  const chatTab=openChat?window.open(CHATGPT_URL,'_blank'):null;
   let copied=false;
-  try{if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(message);copied=true;}}catch(error){}
+  try{
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(message);copied=true;
+    }
+  }catch(error){}
   if(!copied){
     const ta=document.createElement('textarea');ta.value=message;
-    ta.setAttribute('readonly','');ta.style.cssText='position:fixed;top:0;left:0;opacity:0;';
+    ta.setAttribute('readonly','');
+    ta.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;padding:0;border:0;opacity:0.01;font-size:16px;';
     document.body.append(ta);ta.focus();ta.select();
     try{copied=document.execCommand('copy');}catch(error){}
     ta.remove();
   }
-  if(!copied){if(coachTab&&!coachTab.closed)coachTab.close();toast('📋 복사가 차단되었습니다. 기록만 복사를 이용해 주세요.');return;}
-  if(openProject){
-    // 모바일 팝업 차단을 피하기 위해 복사 성공 후 같은 창에서 프로젝트로 이동
-    toast('✅ 기록 복사 완료! 코칭 프로젝트로 이동합니다.');
-    if(coachTab&&!coachTab.closed)coachTab.location.replace(PROJECT_URL);else toast('📋 복사 완료! 팝업 차단 시 프로젝트만 열기를 이용해 주세요.');
+  if(!copied){
+    if(chatTab&&!chatTab.closed)chatTab.close();
+    toast('⚠️ 자동 복사에 실패했습니다. 브라우저의 클립보드 권한을 확인한 뒤 다시 눌러 주세요.');
+    return;
+  }
+  if(openChat){
+    toast(chatTab
+      ?'✅ 기록과 코칭 요청을 복사했어요. 열린 ChatGPT에 붙여넣고 전송해 주세요.'
+      :'✅ 복사 완료! 새 탭이 차단됐어요. chatgpt.com을 열어 붙여넣어 주세요.');
   }else{
-    toast('✅ 기록을 복사했어요! 코칭 프로젝트에 붙여넣어 주세요.');
+    toast('✅ 기록과 코칭 요청을 복사했어요. ChatGPT 채팅창에 붙여넣어 주세요.');
   }
 }
 function logout(){stopCamera();studentToken='';teacherToken='';currentUserUid='';session=null;teacherVerified=false;teacherSchool='';lastRecord=null;lastResultEvent='';selectedEvent='3-3-3';$('authPin').value='';$('authNick').value='';showRank();showPage('home');$('loginAnchor').scrollIntoView({behavior:'smooth',block:'start'});toast('👋 로그아웃했습니다. 다음 학생이 로그인할 수 있어요.');}
@@ -326,7 +336,7 @@ function setup(){load();
  $('teacherUnlock').addEventListener('click',teacherUnlock);$('teacherSave').addEventListener('click',saveTeacher);$('teacherSettings').addEventListener('click',populationPanel);$('populationSave').addEventListener('click',savePopulation);
  $('cameraToggle').addEventListener('click',()=>cameraActive?stopCamera():cameraStart());$('cameraFlip').addEventListener('click',async()=>{if(state==='running'){toast('측정 중 카메라는 전환할 수 없습니다.');return;}cameraFacing=cameraFacing==='user'?'environment':'user';if(cameraActive){stopCamera();await cameraStart();}});$('cameraSoundTest').addEventListener('click',()=>{audio();playSignal('ready');setTimeout(()=>playSignal('end'),1100);toast('🔊 준비음 → 종료음 순서로 재생합니다.');});$('soundVolume').addEventListener('input',e=>setText('soundVolumeLabel',e.target.value+'%'));$('cameraReset').addEventListener('click',cameraReset);$('pendingSave').addEventListener('click',()=>saveMeasurement(pendingMeasurement));$('pendingDiscard').addEventListener('click',()=>{pendingMeasurement=null;$('cameraPending').classList.add('hidden');cameraReset();toast('저장하지 않고 새 측정을 준비합니다.');});$('testStart').addEventListener('click',()=>{if(state==='running'){toast('이미 측정 중입니다.');return;}audio();cameraReset();testTimer=true;playSignal('ready');beginTiming('test');const f=()=>{if(state==='running'&&testTimer){setText('cameraTime',fmt((performance.now()-clockStart)/1000));requestAnimationFrame(f);}};requestAnimationFrame(f);});$('testStop').addEventListener('click',()=>finishTiming('test'));
  $('aiHistoryToggle').addEventListener('click',toggleAiHistory);
- $('coachShowRecords').addEventListener('click',renderCoachRecords);$('coachCopyOpen').addEventListener('click',()=>copyCoach(true));$('coachCopy').addEventListener('click',()=>copyCoach(false));$('coachOpen').addEventListener('click',()=>window.open(PROJECT_URL,'_blank','noopener,noreferrer'));
+ $('coachShowRecords').addEventListener('click',renderCoachRecords);$('coachCopyOpen').addEventListener('click',()=>copyCoach(true));$('coachCopy').addEventListener('click',()=>copyCoach(false));$('coachOpen').addEventListener('click',()=>window.open(CHATGPT_URL,'_blank'));
  window.addEventListener('pagehide',stopCamera);document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='running')stopCamera();});
 }
 setup();
