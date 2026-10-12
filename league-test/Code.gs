@@ -6,7 +6,7 @@
  * 학생 실명·학번·생년월일을 수집하지 않습니다.
  */
 const DB_ID = '1qV7r-nRYBGSCv1FBYiUjQ0UIqatIpa0Cvd1YIopcZIY';
-const SCHOOL_NAMES = ['신월중','경원중','감계중','반림중','진영중'];
+const SCHOOL_NAMES = ['신월중','경원중','감계중','반림중','진영중','자유학교'];
 const EVENT_NAMES = ['3-3-3','3-6-3','3-6-3C','6-6','1-10-1'];
 const CACHE_TTL = 1200;
 const SESSION_TTL = 21600;
@@ -18,12 +18,12 @@ function uuid_(){return Utilities.getUuid();}
 function cache_(){return CacheService.getScriptCache();}
 function pepper_(){const p=PropertiesService.getScriptProperties();let pepper=p.getProperty('PIN_PEPPER');if(!pepper){pepper=uuid_()+uuid_();p.setProperty('PIN_PEPPER',pepper);}return pepper;}
 function hash_(pin,salt){const raw=String(salt)+'|'+String(pin)+'|'+pepper_();return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256,raw).map(b=>('0'+(b&255).toString(16)).slice(-2)).join('');}
-function safeReceipt_(p){const id=text_(p.requestId,90);if(!/^[\w-]{20,90}$/.test(id))throw Error('요청 번호가 잘못되었습니다.');return id;}
+function safeReceipt_(p){const id=text_(p.requestId,90);if(!/^[A-Za-z0-9_-]{20,90}$/.test(id))throw Error('요청 번호가 잘못되었습니다.');return id;}
 function userRow_(r){return {uid:String(r[0]),school:String(r[1]),grade:Number(r[2]),nick:String(r[3])};}
 function eventText_(v){if(v instanceof Date)return String(v.getFullYear()%10)+'-'+(v.getMonth()+1)+'-'+v.getDate();return String(v);}
 function recordRow_(r){return {id:String(r[0]),uid:String(r[1]),event:eventText_(r[2]),sec:Number(r[3]),at:String(r[4]),source:String(r[5]),valid:r[6]===true||String(r[6]).toLowerCase()==='true'};}
 function readAll_(){const schools=rows_('Schools'),pop={};schools.forEach(r=>pop[String(r[0])]=Number(r[1]));return {ok:true,users:rows_('Users').map(userRow_),records:rows_('Records').map(recordRow_),schoolPop:pop,serverTime:new Date().toISOString()};}
-function session_(token,role){const id=text_(token,120);if(!/^[\w-]{20,120}$/.test(id))throw Error('다시 로그인해 주세요.');const raw=cache_().get('session_'+id);if(!raw)throw Error('로그인 시간이 만료되었습니다. 다시 로그인해 주세요.');const s=JSON.parse(raw);if(s.role!==role)throw Error('접근 권한이 없습니다.');return s;}
+function session_(token,role){const id=text_(token,120);if(!/^[A-Za-z0-9_-]{20,120}$/.test(id))throw Error('다시 로그인해 주세요.');const raw=cache_().get('session_'+id);if(!raw)throw Error('로그인 시간이 만료되었습니다. 다시 로그인해 주세요.');const s=JSON.parse(raw);if(s.role!==role)throw Error('접근 권한이 없습니다.');return s;}
 function createSession_(uid,role,school){const t=uuid_()+'-'+uuid_();cache_().put('session_'+t,JSON.stringify({uid,role,school}),SESSION_TTL);return t;}
 function findUser_(list,school,nick){return list.find(r=>String(r[1])===school&&String(r[3]).toLowerCase()===nick.toLowerCase());}
 function jsonp_(data,cb){if(!/^[A-Za-z_$][A-Za-z0-9_$]{0,70}$/.test(cb))return ContentService.createTextOutput('invalid callback');return ContentService.createTextOutput(cb+'('+JSON.stringify(data)+');').setMimeType(ContentService.MimeType.JAVASCRIPT);}
@@ -31,7 +31,7 @@ function doGet(e){
  const p=e.parameter||{},cb=String(p.callback||'');
  try{
   if(p.action==='snapshot')return jsonp_(readAll_(),cb);
-  if(p.action==='receipt'){const id=text_(p.id,90);if(!/^[\w-]{20,90}$/.test(id))throw Error('잘못된 요청 번호');return jsonp_(JSON.parse(cache_().get('receipt_'+id)||'{"ok":false,"pending":true}'),cb);}
+  if(p.action==='receipt'){const id=text_(p.id,90);if(!/^[A-Za-z0-9_-]{20,90}$/.test(id))throw Error('잘못된 요청 번호');return jsonp_(JSON.parse(cache_().get('receipt_'+id)||'{"ok":false,"pending":true}'),cb);}
   return jsonp_({ok:false,error:'지원하지 않는 요청입니다.'},cb);
  }catch(err){return jsonp_({ok:false,error:String(err.message||err)},cb);}
 }
