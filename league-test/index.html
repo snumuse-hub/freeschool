@@ -162,7 +162,7 @@ let users=[],records=[],session=null,teacherVerified=false,teacherSchool='',curr
 let currentUserUid='',state='idle',stream=null,hands=null,cameraActive=false,cameraBusy=false,processing=false,cameraLoopId=0,handScriptPromise=null,clockStart=0,readyAt=0,leaveAt=0,returnAt=0,soundContext=null,testTimer=false,measureSource='AI',pendingMeasurement=null,autoSaveToken=0,frontMirror=false;
 let fakeCounter=0;
 function rand(){fakeCounter++;return (Math.sin(fakeCounter*29.13)*10000)%1;}
-function demoSeed(){const sampleUsers=[],sampleRecords=[];const schoolCaps=[22,19,18,23,20,11];const bases=[4.2,5.5,16.7,8.4,12.8];let number=0;
+function demoSeed(){const sampleUsers=[],sampleRecords=[];const schoolCaps=[22,19,18,23,20];const bases=[4.2,5.5,16.7,8.4,12.8];let number=0;
  for(let s=0;s<SCHOOLS.length;s++){for(let i=0;i<schoolCaps[s];i++){number++;let uid='sample-'+number;sampleUsers.push({uid,school:SCHOOLS[s],grade:1+i%3,nick:['번개손','스택왕','컵고수','초고속','도전왕','반짝컵','리듬짱','컵마스터'][i%8]+'_'+(s+1)+String(i+1).padStart(2,'0'),demo:true});for(let e=0;e<3;e++){if((i+e)%9===0)continue;let base=bases[e]+((i*37+s*17+e*23)%50)/12+((s+e)%4)*.17;for(let k=0;k<2;k++)sampleRecords.push({id:'seed-'+uid+'-'+e+'-'+k,uid,event:EVENTS[e],sec:Number((base+k*.14+(i%3)*.05).toFixed(3)),at:new Date(2026,8,4+i%20,9+k).toISOString(),valid:true,source:'가상 기록'});}}}
  return {sampleUsers,sampleRecords};}
 const demo=demoSeed();
