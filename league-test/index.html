@@ -146,7 +146,7 @@ async function remoteWrite(action,args={}){
  }
  throw Error('서버 처리 결과를 확인하지 못했습니다. 재시도 전 시트 기록을 확인하세요.');
 }
-async async function remoteRefresh(){
+async function remoteRefresh(){
  if(!REMOTE)return;
  const d=await remoteGet('snapshot');if(!d.ok)throw Error(d.error||'동기화 실패');
  users=d.users||[];records=d.records||[];setText('rankDataStatus','실제 기록');
