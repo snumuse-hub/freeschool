@@ -22591,8 +22591,6 @@ window.addEventListener('load',()=>{queueDecorate();setTimeout(queueDecorate,300
 #jstackAiBox .jstack-ai-pending-buttons button.del{background:#4b3440;border-color:#986a7b}
 #jstackAiBox .jstack-ai-pending-buttons button:disabled{opacity:.45;cursor:not-allowed}
 #jstackAiBox .jstack-ai-note{font-size:11px;line-height:1.5;color:#bcd1df;margin-top:7px}
-#jstackAiBox .jstack-ai-current-actions{margin-top:8px}
-#jstackAiBox .jstack-ai-current-actions button{width:100%;background:#16755c}
 #jstackAiBox #jstackAiPendingStatus{color:#f7d7a2;font-size:11px;line-height:1.5;margin-top:6px;white-space:pre-wrap}
 @media(max-width:460px){#jstackAiBox .jstack-ai-pending-item{grid-template-columns:1fr}}
 </style>
@@ -22656,7 +22654,7 @@ window.addEventListener('load',()=>{queueDecorate();setTimeout(queueDecorate,300
         <!-- AI 카메라 측정: 기존 수동 입력을 유지한 독립 보조 기능 (5종목 공통) -->
         <section id="jstackAiBox" aria-label="스택스 카메라 자동 측정">
           <button id="jstackAiToggle" type="button" aria-expanded="false" aria-controls="jstackAiInner">📷 AI 카메라 자동 측정 · 5종목 <span id="jstackAiToggleArrow">펼치기 ▾</span></button>
-          <div class="jstack-ai-sub">선택한 종목을 카메라로 측정해 기존 스택스 기록으로 자동 저장합니다. 기존 직접 입력도 그대로 사용할 수 있습니다.</div>
+          <div class="jstack-ai-sub">AI 측정 결과를 저장 목록에서 먼저 확인하고, 선택한 기록만 공식 기록으로 등록합니다. 직접 입력도 그대로 사용할 수 있습니다.</div>
           <div id="jstackAiInner" hidden>
             <div class="jstack-ai-event" id="jstackAiEvent">측정 종목: 3-3-3</div>
             <div class="jstack-ai-video">
@@ -22676,7 +22674,7 @@ window.addEventListener('load',()=>{queueDecorate();setTimeout(queueDecorate,300
               <button class="jstack-ai-button warn" id="jstackAiStop" type="button" disabled>수동 종료</button>
             </div>
             <div class="jstack-ai-options">
-              <label><input type="checkbox" id="jstackAiAutoSave" checked> 완료 후 기존 기록에 자동 저장</label>
+              <label><input type="checkbox" id="jstackAiAutoSave"> 확인 없이 완료 기록 자동 저장 (기본: 확인 후 저장)</label>
               <label><input type="checkbox" id="jstackAiManual"> 손 인식 없이 타이머만 테스트</label>
             </div>
             <div id="jstackAiManualBtns" class="jstack-ai-actions" style="display:none;grid-template-columns:1fr"><button class="jstack-ai-button secondary" type="button" id="jstackAiManualBtn">수동 시작 / 종료 (저장 제외)</button></div>
@@ -22685,12 +22683,12 @@ window.addEventListener('load',()=>{queueDecorate();setTimeout(queueDecorate,300
               <div class="jstack-ai-metric"><b id="jstackAiZoneValue">준비 영역 밖</b><small>양손 준비 위치</small></div>
             </div>
             <div class="jstack-ai-report" id="jstackAiFeedback" aria-live="polite">카메라 측정이 끝난 뒤 손 움직임에 기반한 연습 피드백을 표시합니다.</div>
-            <div id="jstackAiSaveMessage" role="status" aria-live="polite">자동 측정 기록은 기존 구글 시트 저장 기능으로 전달됩니다.</div>
+            <div id="jstackAiSaveMessage" role="status" aria-live="polite">기본 설정은 확인 후 저장입니다. 저장 목록에서 공식 기록으로 등록할 기록을 선택하세요.</div>
             <button type="button" class="jstack-ai-cancel" id="jstackAiCancel">잘못 측정됨 · 자동 저장 취소</button>
-            <div class="jstack-ai-current-actions" id="jstackAiCurrentActions" hidden><button class="jstack-ai-button" type="button" id="jstackAiSaveNow">📥 방금 측정한 기록 저장</button></div>
-            <section class="jstack-ai-pending" aria-label="미저장 카메라 기록">
-              <h4>📋 미저장 카메라 기록 <span id="jstackAiPendingCount">0건</span></h4>
-              <div class="jstack-ai-note">자동 저장을 끄거나 저장 확인이 안 된 기록은 이 기기에 남습니다. 로그인한 학생별로 구분되며, 같은 기기·브라우저에서 다시 확인할 수 있습니다.</div>
+            
+            <section class="jstack-ai-pending" aria-label="AI 측정 저장 목록">
+              <h4>📋 AI 측정 저장 목록 <span id="jstackAiPendingCount">0건</span></h4>
+              <div class="jstack-ai-note">공식 기록으로 등록하기 전 기록은 이 기기에 임시 보관됩니다. 로그인한 학생별로 구분되며 같은 기기·브라우저에서 확인할 수 있습니다.</div>
               <div id="jstackAiPendingList" aria-live="polite"></div>
               <div id="jstackAiPendingStatus" role="status"></div>
             </section>
@@ -25586,7 +25584,7 @@ window.addEventListener('load',()=>{queueDecorate();setTimeout(queueDecorate,300
     list.replaceChildren();setText('jstackAiPendingCount',pending.length+'건');
     if(!pendingStudentKey){setText('jstackAiPendingStatus','학생 로그인 후 미저장 기록을 확인할 수 있습니다.');}
     else setText('jstackAiPendingStatus',storageProblem||'');
-    if(!pending.length){var empty=document.createElement('div');empty.className='jstack-ai-note';empty.textContent='현재 미저장 카메라 기록이 없습니다.';list.appendChild(empty);}
+    if(!pending.length){var empty=document.createElement('div');empty.className='jstack-ai-note';empty.textContent='저장 대기 중인 AI 측정 기록이 없습니다.';list.appendChild(empty);}
     pending.slice().reverse().forEach(function(r){
       var row=document.createElement('div');row.className='jstack-ai-pending-item';
       var desc=document.createElement('div');desc.className='jstack-ai-pending-meta';
@@ -25596,7 +25594,7 @@ window.addEventListener('load',()=>{queueDecorate();setTimeout(queueDecorate,300
       small.textContent=(isNaN(when.getTime())?'측정 시각 미상':when.toLocaleString('ko-KR'))+' · '+(r.state==='uncertain'?'저장 결과 확인 필요':r.state==='saving'?'저장 중':'저장 대기');desc.appendChild(small);
       var buttons=document.createElement('div');buttons.className='jstack-ai-pending-buttons';
       if(r.state!=='uncertain'&&r.state!=='saving'){
-        var send=document.createElement('button');send.type='button';send.textContent='기록 저장';send.disabled=saveBusy||cameraBusy;send.addEventListener('click',function(){saveRecord(r.id);});buttons.appendChild(send);
+        var send=document.createElement('button');send.type='button';send.textContent='공식 기록으로 등록';send.disabled=saveBusy||cameraBusy;send.addEventListener('click',function(){saveRecord(r.id,true);});buttons.appendChild(send);
       }
       if(r.state==='uncertain'){
         var review=document.createElement('button');review.type='button';review.textContent='확인 후 재시도';review.disabled=saveBusy;review.addEventListener('click',function(){
@@ -25607,7 +25605,7 @@ window.addEventListener('load',()=>{queueDecorate();setTimeout(queueDecorate,300
       }
       var remove=document.createElement('button');remove.type='button';remove.className='del';remove.textContent='삭제';remove.disabled=saveBusy&&r.state==='saving';remove.addEventListener('click',function(){
         if(confirm('이 측정값을 미저장 목록에서 삭제할까요? 이미 서버에 제출한 기록은 삭제되지 않습니다.')){
-          if(currentPendingId===r.id)cancelAutoSave();pending=pending.filter(function(x){return x.id!==r.id;});persistPending();renderPending();updateSaveNowButton();
+          if(currentPendingId===r.id)cancelAutoSave();pending=pending.filter(function(x){return x.id!==r.id;});persistPending();renderPending();
         }
       });buttons.appendChild(remove);row.appendChild(desc);row.appendChild(buttons);list.appendChild(row);
     });
@@ -25621,10 +25619,6 @@ window.addEventListener('load',()=>{queueDecorate();setTimeout(queueDecorate,300
     renderPending();return r;
   }
   function findPending(id){return pending.find(function(r){return r.id===id;});}
-  function updateSaveNowButton(){
-    var r=findPending(currentPendingId),box=$('jstackAiCurrentActions');
-    box.hidden=!(r&&r.state==='pending'&&phase==='done'&&!saveBusy);
-  }
   function cancelAutoSave(msg){
     if(autoSaveTimer){clearTimeout(autoSaveTimer);autoSaveTimer=null;}
     autoSavePending=false;$('jstackAiCancel').classList.remove('show');
@@ -25634,7 +25628,7 @@ window.addEventListener('load',()=>{queueDecorate();setTimeout(queueDecorate,300
     var id=currentPendingId;
     cancelAutoSave('잘못 측정된 기록을 버렸습니다. 기존 기록은 변경되지 않았습니다.');
     if(id){pending=pending.filter(function(r){return r.id!==id;});currentPendingId='';persistPending();renderPending();}
-    updateSaveNowButton();
+    
   }
   function updateEvent(resetIfNeeded){var next=eventFromTab();if(next===currentEvent)return;currentEvent=next;setText('jstackAiEvent','측정 종목: '+next);if(resetIfNeeded)reset('종목이 변경되어 측정을 초기화했습니다.');}
   function reset(message){
@@ -25642,9 +25636,9 @@ window.addEventListener('load',()=>{queueDecorate();setTimeout(queueDecorate,300
     cancelAutoSave(message||'새 측정 준비 중입니다. 미저장 기록은 아래 목록에 남습니다.');
     phase=active?'search':'idle';readyAt=outAt=backAt=startAt=finishMs=0;samples=[];prevSampleAt=0;trialEvent='';currentPendingId='';
     setText('jstackAiTime','0.000');$('jstackAiStop').disabled=true;setText('jstackAiFeedback','측정을 마치면 손 움직임에 기반한 연습 피드백이 표시됩니다.');
-    setStatus(active?'양손을 시작 영역에 놓으세요.':'카메라를 시작하세요.','양손을 화면 하단의 양쪽 초록 영역에 약 0.7초 유지한 후 떼면 시작합니다.');updateSaveNowButton();
+    setStatus(active?'양손을 시작 영역에 놓으세요.':'카메라를 시작하세요.','양손을 화면 하단의 양쪽 초록 영역에 약 0.7초 유지한 후 떼면 시작합니다.');
   }
-  function start(now){cancelAutoSave();trialEvent=currentEvent;phase='running';startAt=now;outAt=backAt=0;samples=[];prevSampleAt=0;currentPendingId='';$('jstackAiStop').disabled=false;updateSaveNowButton();setStatus(trialEvent+' 측정 중','종목을 마치고 양손을 다시 지정 영역에 놓으면 종료합니다.');}
+  function start(now){cancelAutoSave();trialEvent=currentEvent;phase='running';startAt=now;outAt=backAt=0;samples=[];prevSampleAt=0;currentPendingId='';$('jstackAiStop').disabled=false;setStatus(trialEvent+' 측정 중','종목을 마치고 양손을 다시 지정 영역에 놓으면 종료합니다.');}
   function palm(lm){var ids=[0,5,9,13,17],x=0,y=0;ids.forEach(function(i){x+=lm[i].x;y+=lm[i].y;});return {x:x/ids.length,y:y/ids.length};}
   function zone(p){return p.y>.68&&p.y<.96&&((p.x>.10&&p.x<.45)||(p.x>.55&&p.x<.90));}
   function feedback(){
@@ -25658,11 +25652,11 @@ window.addEventListener('load',()=>{queueDecorate();setTimeout(queueDecorate,300
   }
   function finish(now,how){
     if(phase!=='running')return;finishMs=Math.max(0,now-startAt);phase='done';$('jstackAiStop').disabled=true;setText('jstackAiTime',fmt(finishMs));setStatus('측정 완료 · '+trialEvent,'시간을 확인해 주세요. 손 위치에 기반한 연습용 측정값입니다.');feedback();
-    if(!active||manual||how!=='camera'){setText('jstackAiSaveMessage','수동 종료 또는 테스트 모드는 저장하지 않습니다. 실제 카메라 자동 종료로 측정해 주세요.');updateSaveNowButton();return;}
-    if(finishMs<1000||finishMs>300000){setText('jstackAiSaveMessage','기록 허용 범위(1.000~300.000초) 밖이어서 저장할 수 없습니다.');updateSaveNowButton();return;}
+    if(!active||manual||how!=='camera'){setText('jstackAiSaveMessage','수동 종료 또는 테스트 모드는 저장하지 않습니다. 실제 카메라 자동 종료로 측정해 주세요.');return;}
+    if(finishMs<1000||finishMs>300000){setText('jstackAiSaveMessage','기록 허용 범위(1.000~300.000초) 밖이어서 저장할 수 없습니다.');return;}
     document.dispatchEvent(new CustomEvent('jstack:ai-finished',{detail:{event:trialEvent,seconds:Number(fmt(finishMs))}}));
-    var r=makePending(trialEvent,Number(fmt(finishMs)));if(!r)return;currentPendingId=r.id;updateSaveNowButton();
-    if($('jstackAiAutoSave').checked){scheduleAutoSave(r.id);}else setText('jstackAiSaveMessage','✅ 측정 기록이 미저장 목록에 보관되었습니다. 아래 기록 저장 버튼으로 언제든 제출할 수 있습니다.');
+    var r=makePending(trialEvent,Number(fmt(finishMs)));if(!r)return;currentPendingId=r.id;
+    if($('jstackAiAutoSave').checked){scheduleAutoSave(r.id);}else setText('jstackAiSaveMessage','✅ 측정 기록을 저장 목록에 보관했습니다. 확인한 기록만 목록에서 공식 기록으로 등록할 수 있습니다.');
   }
   function scheduleAutoSave(id){
     cancelAutoSave();autoSavePending=true;$('jstackAiCancel').classList.add('show');var deadline=Date.now()+5000;
@@ -25673,23 +25667,24 @@ window.addEventListener('load',()=>{queueDecorate();setTimeout(queueDecorate,300
     }
     countdown();
   }
-  async function saveRecord(id){
+  async function saveRecord(id,confirmOfficial){
     loadPending();var r=findPending(id);if(!r||saveBusy||r.state!=='pending')return;
+    if(confirmOfficial&&!confirm(r.event+' '+Number(r.seconds).toFixed(3)+'초 기록을 공식 기록으로 등록할까요?'))return;
     if(!pendingStudentKey){setText('jstackAiSaveMessage','로그인 상태가 확인되지 않아 저장할 수 없습니다.');return;}
-    saveBusy=true;r.state='saving';persistPending();renderPending();updateSaveNowButton();
+    saveBusy=true;r.state='saving';persistPending();renderPending();
     $('jstackAiReset').disabled=true;$('jstackAiCamera').disabled=true;$('jstackAiSwitch').disabled=true;
-    setText('jstackAiSaveMessage','🔄 '+r.event+' '+Number(r.seconds).toFixed(3)+'초를 기존 스택스 기록으로 저장·검증 중입니다.');
+    setText('jstackAiSaveMessage','🔄 '+r.event+' '+Number(r.seconds).toFixed(3)+'초를 공식 기록으로 등록·검증 중입니다.');
     try{
       if(typeof window.jstackAiSaveRecord!=='function')throw new Error('기존 스택스 기록 저장 함수를 찾지 못했습니다.');
       var result=await window.jstackAiSaveRecord(r.event,Number(r.seconds));
       if(result===true){
         pending=pending.filter(function(x){return x.id!==id;});if(currentPendingId===id)currentPendingId='';
-        persistPending();setText('jstackAiSaveMessage','✅ '+r.event+' '+Number(r.seconds).toFixed(3)+'초 저장이 기존 검증 절차에서 확인되었습니다.');
+        persistPending();setText('jstackAiSaveMessage','✅ '+r.event+' '+Number(r.seconds).toFixed(3)+'초 공식 기록 등록이 확인되었습니다.');
       }else{
         r.state='uncertain';persistPending();setText('jstackAiSaveMessage','⚠️ 서버 저장 성공 여부를 확인할 수 없습니다. 기존 기록 화면과 구글 시트를 확인하기 전에는 재저장하지 마세요.');
       }
     }catch(e){r.state='uncertain';persistPending();setText('jstackAiSaveMessage','⚠️ 저장 확인 실패: '+String(e&&e.message||e)+' · 기존 기록을 먼저 확인하세요. 중복 저장 방지를 위해 재시도를 잠갔습니다.');}
-    finally{saveBusy=false;$('jstackAiReset').disabled=false;$('jstackAiCamera').disabled=false;$('jstackAiSwitch').disabled=!active||cameraBusy;renderPending();updateSaveNowButton();}
+    finally{saveBusy=false;$('jstackAiReset').disabled=false;$('jstackAiCamera').disabled=false;$('jstackAiSwitch').disabled=!active||cameraBusy;renderPending();}
   }
   function draw(landmarks){var w=video.videoWidth||640,h=video.videoHeight||400;if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}ctx.clearRect(0,0,w,h);
     ZONES.forEach(function(z){ctx.fillStyle=inZone?'rgba(50,210,162,.25)':'rgba(50,210,162,.11)';ctx.strokeStyle='#61efc5';ctx.lineWidth=3;ctx.fillRect(z[0]*w,z[1]*h,z[2]*w,z[3]*h);ctx.strokeRect(z[0]*w,z[1]*h,z[2]*w,z[3]*h);});
@@ -25774,7 +25769,7 @@ window.addEventListener('load',()=>{queueDecorate();setTimeout(queueDecorate,300
     $('jstackAiManual').addEventListener('change',function(){manual=this.checked;$('jstackAiManualBtns').style.display=manual?'grid':'none';reset();if(manual)setStatus('수동 테스트 모드','수동 모드에서는 서버로 기록을 저장하지 않습니다.');});
     $('jstackAiManualBtn').addEventListener('click',function(){if(phase==='running')finish(performance.now(),'manual-test');else{updateEvent(false);start(performance.now());}});
     $('jstackAiCancel').addEventListener('click',cancelBadMeasurement);
-    $('jstackAiSaveNow').addEventListener('click',function(){if(currentPendingId)saveRecord(currentPendingId);});
+    
     var activeLabel=$('jstackEventBig');if(activeLabel)new MutationObserver(function(){updateEvent(true);}).observe(activeLabel,{characterData:true,childList:true,subtree:true});
     document.addEventListener('visibilitychange',function(){if(document.hidden&&phase==='running'){stopCamera();reset('화면이 전환되어 진행 중인 측정은 취소되었습니다.');}});
     window.addEventListener('pagehide',function(){haltStream();cancelAutoSave();});
