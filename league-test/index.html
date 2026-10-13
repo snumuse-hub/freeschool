@@ -102,6 +102,17 @@ h2{font-size:24px}h3{font-size:19px}.sub{font-size:14px}.hint{font-size:13px}
 @keyframes teacherSaveSpin{to{transform:rotate(360deg)}}
 @media(max-width:760px){.teacherMeasureModes{grid-template-columns:1fr}.teacherTrialDetails strong{font-size:18px}.teacherTimerControls{flex-direction:column}.teacherTimerControls .btn{width:100%}}
 
+
+/* 주차별 순위와 짧은 추가 순위 스크롤 */
+.rankPeriodControls{display:grid;gap:8px;margin:10px 0 14px}
+.rankPeriodChoices,.rankWeekChoices{display:flex;flex-wrap:wrap;gap:7px}
+.rankWeekChoices .chip{font-size:12px;padding:8px 10px}
+.rankPeriodLabel{margin:0;font-size:12px}
+.rankTileDetail{display:block!important;margin-top:6px;font-size:11px!important;line-height:1.45;color:var(--muted)}
+.rankTileMetric{display:block;margin-top:5px;font-size:18px!important}
+.rankExtraScroll{max-height:230px;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.rankExtraScroll .rankTable th,.rankExtraScroll .rankTable td{padding-top:7px;padding-bottom:7px;font-size:12px}
+@media(max-width:760px){.rankExtraScroll{max-height:210px}.rankWeekChoices .chip{padding:7px 9px}}
 </style>
 </head>
 <body>
@@ -119,7 +130,7 @@ h2{font-size:24px}h3{font-size:19px}.sub{font-size:14px}.hint{font-size:13px}
  <div class="row space"><div><h2>🏆 두근두근! 리그 랭킹</h2><p class="sub">학교 종합 순위와 우리 친구들의 도전 기록을 확인해 보세요.</p></div><span class="pill" id="rankDataStatus">가상 데이터</span></div>
  <div class="rankTabs" id="rankTabs"></div>
  <div id="rankContent"></div>
- <p class="sub" style="margin:14px 0 0">📌 학교 점수 = 개인종합 25점 + 종목별 25점 + 참여 50점 · 같은 기록은 공동 순위</p>
+ <p class="sub" style="margin:14px 0 0">📌 학교 점수 = 기록 점수 60점 + 참가율 40점 · 학교 전체 학생 수 기준 · 같은 기록은 공동 순위</p>
  </div>
  <div class="card loginArea" id="loginAnchor">
  <h2>🔐 나도 도전할래!</h2><p class="sub">학교와 학년을 고르고 닉네임으로 도전하세요. 🐣</p>
@@ -211,6 +222,14 @@ h2{font-size:24px}h3{font-size:19px}.sub{font-size:14px}.hint{font-size:13px}
 const SCHOOLS=['신월중','경원중','감계중','반림중','진영중','자유학교'];
 const EVENTS=['3-3-3','3-6-3','3-6-3C','6-6','1-10-1'];
 const OFFICIAL=EVENTS.slice(0,3);
+const LEAGUE_WEEKS=[
+ {start:'2026-09-28',end:'2026-10-04',label:'2026.09.28~2026.10.04'},
+ {start:'2026-10-05',end:'2026-10-11',label:'2026.10.05~2026.10.11'},
+ {start:'2026-10-12',end:'2026-10-18',label:'2026.10.12~2026.10.18'},
+ {start:'2026-10-19',end:'2026-10-25',label:'2026.10.19~2026.10.25'},
+ {start:'2026-10-26',end:'2026-11-01',label:'2026.10.26~2026.11.01'},
+ {start:'2026-11-02',end:'2026-11-08',label:'2026.11.02~2026.11.08'}
+];
 const CHATGPT_URL='https://chatgpt.com/';
 const STORE='stacking-league-2026-demo-v1';
 const GAS_URL='https://script.google.com/macros/s/AKfycbyhzYxs38a9mAjS8KFtdsHWS0wH241XEazyu5ARm2dRdI_na0NU2HaJ8zyDGUQpbHQ/exec'; // Google Apps Script 웹 앱
@@ -293,7 +312,7 @@ const DIFFICULTIES=[['drop','🥤 컵을 자꾸 떨어뜨려요'],['order','🔀
 const $=id=>document.getElementById(id);
 const pages=['home','choice','ai','teacher','nextstudent','result','coach'];
 let schoolPop={신월중:360,경원중:320,감계중:280,반림중:335,진영중:310,자유학교:0};
-let users=[],records=[],session=null,teacherVerified=false,teacherSchool='',currentPage='home',lastMode='ai',lastRecord=null,lastResultEvent='',selectedEvent='3-3-3',saveMode='auto',rankMode='school',authMode='login',coachReturn='choice',coachSelections=[],cameraFacing='environment';
+let users=[],records=[],session=null,teacherVerified=false,teacherSchool='',currentPage='home',lastMode='ai',lastRecord=null,lastResultEvent='',selectedEvent='3-3-3',saveMode='auto',rankMode='school',rankPeriod='week',rankWeek=currentLeagueWeek(),authMode='login',coachReturn='choice',coachSelections=[],cameraFacing='environment';
 let currentUserUid='',state='idle',stream=null,hands=null,cameraActive=false,cameraBusy=false,processing=false,cameraLoopId=0,handScriptPromise=null,clockStart=0,readyAt=0,leaveAt=0,returnAt=0,soundContext=null,testTimer=false,measureSource='AI',pendingMeasurement=null,autoSaveToken=0,frontMirror=false;
 let fakeCounter=0;
 let teacherCandidates=[],teacherSelectedCandidateId='',teacherMeasureMode='phone',teacherTimerActive=false,teacherTimerNeedsReset=false,teacherTimerStartedAt=0,teacherTimerRaf=0,teacherSaveBusy=false;
@@ -334,22 +353,122 @@ async function remoteAuth(){
  }catch(err){setText('authMessage','⚠️ '+err.message);}
  finally{remoteBusy=false;$('authSubmit').disabled=false;}
 }
-function rankData(){let valid=allRecords().filter(r=>r.valid!==false&&OFFICIAL.includes(r.event)&&Number(r.sec)>0);const bestByEvent={};for(const e of OFFICIAL){const best=new Map();for(const r of valid.filter(x=>x.event===e)){if(!best.has(r.uid)||best.get(r.uid).sec>r.sec)best.set(r.uid,r);}const sorted=[...best.values()].sort((a,b)=>a.sec-b.sec||a.uid.localeCompare(b.uid));let last=NaN,rank=0;let items=sorted.map((r,i)=>{if(!Number.isFinite(last)||Math.abs(r.sec-last)>=.0005)rank=i+1;last=r.sec;return {...r,rank,score:sorted.length===1?100:1+99*(sorted.length-rank)/(sorted.length-1),user:byId(r.uid)};});bestByEvent[e]=items;}
- const people=new Map();for(const e of OFFICIAL){for(const entry of bestByEvent[e]){if(!people.has(entry.uid))people.set(entry.uid,{uid:entry.uid,school:entry.user?.school||'',grade:entry.user?.grade||'',nick:entry.user?.nick||'',scores:Object.fromEntries(OFFICIAL.map(k=>[k,0]))});people.get(entry.uid).scores[e]=entry.score;}}
- let individuals=[...people.values()].map(u=>({...u,total:Object.values(u.scores).reduce((a,b)=>a+b,0)})).sort((a,b)=>b.total-a.total||a.uid.localeCompare(b.uid));let last=NaN,rank=0;individuals=individuals.map((u,i)=>{if(!Number.isFinite(last)||Math.abs(last-u.total)>.000001)rank=i+1;last=u.total;return {...u,rank,overallScore:individuals.length===1?100:1+99*(individuals.length-rank)/(individuals.length-1)}});
- let schools=SCHOOLS.map(s=>{const configuredPop=num(schoolPop[s]);const pop=Math.max(1,configuredPop);const students=individuals.filter(p=>p.school===s),pnum=students.length;if(configuredPop<1)return {school:s,pop:0,pnum,record:0,events:0,participation:0,total:0,needsPopulation:true};const record=25*students.reduce((a,x)=>a+x.overallScore,0)/(pop*100);const events=25*students.reduce((a,x)=>a+x.total,0)/(pop*300);const participation=50*Math.min(1,pnum/pop);return {school:s,pop,pnum,record,events,participation,total:record+events+participation,needsPopulation:false};}).sort((a,b)=>b.total-a.total||a.school.localeCompare(b.school));return {bestByEvent,individuals,schools};}
+function weekBounds(index){const w=LEAGUE_WEEKS[index-1];if(!w)return [Infinity,-Infinity];const [sy,sm,sd]=w.start.split('-').map(Number),[ey,em,ed]=w.end.split('-').map(Number);return [Date.UTC(sy,sm-1,sd)-9*3600000,Date.UTC(ey,em-1,ed+1)-9*3600000];}
+function currentLeagueWeek(){const now=Date.now();for(let i=0;i<LEAGUE_WEEKS.length;i++){const [start,end]=weekBounds(i+1);if(now>=start&&now<end)return i+1;}let latest=0;for(let i=0;i<LEAGUE_WEEKS.length;i++){if(now>=weekBounds(i+1)[0])latest=i+1;}return latest||1;}
+function leagueWeeksSoFar(){const now=Date.now();return LEAGUE_WEEKS.map((_,i)=>i+1).filter(i=>now>=weekBounds(i)[0]);}
+function recordInWeek(record,index){const at=Date.parse(record.at||'');if(!Number.isFinite(at))return false;const [start,end]=weekBounds(index);return at>=start&&at<end;}
+function rankData(){
+ const source=allRecords().filter(r=>r.valid!==false&&OFFICIAL.includes(r.event)&&Number(r.sec)>0);
+ const weeks=rankPeriod==='week'?[rankWeek]:leagueWeeksSoFar();
+ function calculateWeek(week){
+  const valid=source.filter(r=>recordInWeek(r,week)),bestByEvent={};
+  for(const e of OFFICIAL){
+   const best=new Map();
+   for(const r of valid.filter(x=>x.event===e)){if(!best.has(r.uid)||best.get(r.uid).sec>r.sec)best.set(r.uid,r);}
+   const sorted=[...best.values()].sort((a,b)=>a.sec-b.sec||a.uid.localeCompare(b.uid));let last=NaN,rank=0;
+   bestByEvent[e]=sorted.map((r,i)=>{if(!Number.isFinite(last)||Math.abs(r.sec-last)>=.0005)rank=i+1;last=r.sec;return {...r,rank,score:sorted.length===1?100:1+99*(sorted.length-rank)/(sorted.length-1),user:byId(r.uid)};});
+  }
+  const people=new Map();
+  for(const e of OFFICIAL)for(const entry of bestByEvent[e]){
+   if(!people.has(entry.uid))people.set(entry.uid,{uid:entry.uid,school:entry.user?.school||'',grade:entry.user?.grade||'',nick:entry.user?.nick||'',scores:Object.fromEntries(OFFICIAL.map(k=>[k,0]))});
+   people.get(entry.uid).scores[e]=entry.score;
+  }
+  let individuals=[...people.values()].map(u=>({...u,total:Object.values(u.scores).reduce((a,b)=>a+b,0)})).sort((a,b)=>b.total-a.total||a.uid.localeCompare(b.uid));
+  let last=NaN,rank=0;
+  individuals=individuals.map((u,i)=>{if(!Number.isFinite(last)||Math.abs(last-u.total)>.000001)rank=i+1;last=u.total;return {...u,rank};});
+  return {bestByEvent,individuals};
+ }
+ const snapshots=weeks.map(calculateWeek);
+ let bestByEvent={},individuals=[];
+ if(rankPeriod==='week'){
+  const snapshot=snapshots[0]||{bestByEvent:Object.fromEntries(OFFICIAL.map(e=>[e,[]])),individuals:[]};
+  bestByEvent=snapshot.bestByEvent;individuals=snapshot.individuals;
+ }else{
+  const aggregate=new Map();
+  for(const snapshot of snapshots)for(const e of OFFICIAL)for(const entry of snapshot.bestByEvent[e]){
+   if(!aggregate.has(entry.uid)){
+    const user=entry.user||byId(entry.uid);
+    aggregate.set(entry.uid,{uid:entry.uid,school:user?.school||'',grade:user?.grade||'',nick:user?.nick||'',scores:Object.fromEntries(OFFICIAL.map(k=>[k,0])),bestSecs:Object.fromEntries(OFFICIAL.map(k=>[k,Infinity]))});
+   }
+   const person=aggregate.get(entry.uid);person.scores[e]+=entry.score;person.bestSecs[e]=Math.min(person.bestSecs[e],Number(entry.sec));
+  }
+  individuals=[...aggregate.values()].map(person=>({...person,total:Object.values(person.scores).reduce((a,b)=>a+b,0)})).sort((a,b)=>b.total-a.total||a.uid.localeCompare(b.uid));
+  let last=NaN,rank=0;
+  individuals=individuals.map((person,i)=>{if(!Number.isFinite(last)||Math.abs(last-person.total)>.000001)rank=i+1;last=person.total;return {...person,rank};});
+  for(const e of OFFICIAL){
+   const items=individuals.filter(person=>person.scores[e]>0).map(person=>({uid:person.uid,school:person.school,grade:person.grade,nick:person.nick,score:person.scores[e],sec:person.bestSecs[e],user:byId(person.uid)})).sort((a,b)=>b.score-a.score||a.sec-b.sec||a.uid.localeCompare(b.uid));
+   let lastScore=NaN,eventRank=0;
+   bestByEvent[e]=items.map((item,i)=>{if(!Number.isFinite(lastScore)||Math.abs(lastScore-item.score)>.000001)eventRank=i+1;lastScore=item.score;return {...item,rank:eventRank};});
+  }
+ }
+ const schoolTotals=new Map(SCHOOLS.map(s=>[s,{recordScore:0,participationScore:0,pnum:0}]));
+ for(const snapshot of snapshots)for(const school of SCHOOLS){
+  const configuredPop=num(schoolPop[school]),tally=schoolTotals.get(school);
+  if(configuredPop<1)continue;
+  const students=snapshot.individuals.filter(p=>p.school===school),participantCount=students.length;
+  const eventPoints=students.reduce((sum,p)=>sum+p.total,0);
+  tally.recordScore+=Math.min(60,60*eventPoints/(configuredPop*300));
+  tally.participationScore+=40*Math.min(1,participantCount/configuredPop);
+  tally.pnum+=participantCount;
+ }
+ const weeksCount=rankPeriod==='week'?1:weeks.length,schools=SCHOOLS.map(school=>{
+  const configuredPop=num(schoolPop[school]),tally=schoolTotals.get(school);
+  if(configuredPop<1)return {school,pop:0,pnum:tally.pnum,recordScore:0,participationScore:0,total:0,needsPopulation:true};
+  return {school,pop:configuredPop,pnum:tally.pnum,recordScore:tally.recordScore,participationScore:tally.participationScore,total:tally.recordScore+tally.participationScore,needsPopulation:false};
+ }).sort((a,b)=>b.total-a.total||a.school.localeCompare(b.school));
+ return {bestByEvent,individuals,schools,weeksCount,weeks};
+}
 function td(value,cls){const e=document.createElement('td');if(cls)e.className=cls;e.textContent=value;return e;}function el(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;}
 function renderTable(columns,rows){const wrap=el('div','tableScroll'),table=el('table','rankTable'),thead=el('thead'),tr=el('tr');for(const c of columns)tr.append(el('th','',c));thead.append(tr);const tbody=el('tbody');for(const data of rows){const r=el('tr');data.forEach((s,i)=>r.append(td(s,i===0?'schoolCell':'')));tbody.append(r);}table.append(thead,tbody);wrap.append(table);return wrap;}
 function showRank(){
  const tabs=[['school','🏫 학교 종합'],['overall','🏅 개인 종합'],['3-3-3','🥤 3-3-3'],['3-6-3','⚡ 3-6-3'],['3-6-3C','🔥 사이클']];
  const holder=$('rankTabs');holder.replaceChildren();for(const [key,name] of tabs){const bt=el('button','chip'+(rankMode===key?' active':''),name);bt.type='button';bt.onclick=()=>{rankMode=key;showRank();};holder.append(bt);}
- const c=$('rankContent');c.replaceChildren();const d=rankData(),limit=rankMode==='school'?3:5;let columns=[],rows=[];
- if(rankMode==='school'){columns=['순위','학교','개인종합 /25','종목별 /25','참여 /50','합계 /100'];rows=d.schools.map((x,i)=>[(i+1)+'위',x.school+(x.needsPopulation?' · 학생 수 입력 필요':''),x.needsPopulation?'—':x.record.toFixed(1),x.needsPopulation?'—':x.events.toFixed(1),x.needsPopulation?'—':x.participation.toFixed(1),x.needsPopulation?'—':x.total.toFixed(1)]);}
- else if(rankMode==='overall'){columns=['순위','닉네임 · 소속','3-3-3','3-6-3','사이클','개인합계 /300'];rows=d.individuals.map(x=>[x.rank+'위',x.nick+' · '+x.school+' '+x.grade+'학년',fmtPoint(x.scores['3-3-3']),fmtPoint(x.scores['3-6-3']),fmtPoint(x.scores['3-6-3C']),x.total.toFixed(1)]);}
- else{columns=['순위','닉네임 · 소속','최고기록','순위환산점수'];rows=d.bestByEvent[rankMode].map(x=>[x.rank+'위',(x.user?.nick||'')+' · '+(x.user?.school||'')+' '+(x.user?.grade||'')+'학년',fmt(x.sec)+'초',x.score.toFixed(1)+'점']);}
- const tiles=el('div','scoreTiles');for(const [i,row] of rows.slice(0,limit).entries()){const tile=el('div','scoreTile');tile.append(el('span','',(['🥇','🥈','🥉','4️⃣','5️⃣'][i]||'')+' '+row[0]),el('strong','',rankMode==='school'?row[1]:row[1].split(' · ')[0]),el('span','',row[row.length-1]+(rankMode==='school'||rankMode==='overall'?'점':'')));tiles.append(tile);}if(rows.length)c.append(tiles);else c.append(el('p','hint','아직 등록된 기록이 없습니다.'));
- if(rows.length>limit){const details=el('details','rankExtra'),summary=el('summary','', '↕ '+(limit+1)+'위부터 스크롤로 확인 ('+(rows.length-limit)+'명/학교)');const scroll=el('div','rankExtraScroll');scroll.append(renderTable(columns,rows.slice(limit)));details.append(summary,scroll);c.append(details);}
- if(rankMode!=='school'&&currentUserUid){const p=rankMode==='overall'?d.individuals.find(x=>x.uid===currentUserUid):d.bestByEvent[rankMode].find(x=>x.uid===currentUserUid);const box=el('div','myRank');box.append(el('strong','','🙋 내 순위: '+(p?p.rank+'위':'기록 없음')));if(p)box.append(el('span','',rankMode==='overall'?p.total.toFixed(1)+'점':fmt(p.sec)+'초'));c.append(box);}
+ const c=$('rankContent');c.replaceChildren();const d=rankData(),limit=3;
+ const controls=el('div','rankPeriodControls'),periodRow=el('div','rankPeriodChoices');
+ for(const [key,label] of [['week','주간'],['cumulative','전체 누적']]){const button=el('button','chip'+(rankPeriod===key?' active':''),label);button.type='button';button.setAttribute('aria-pressed',String(rankPeriod===key));button.onclick=()=>{rankPeriod=key;showRank();};periodRow.append(button);}
+ controls.append(periodRow);
+ if(rankPeriod==='week'){
+  const weekRow=el('div','rankWeekChoices');
+  for(let i=1;i<=LEAGUE_WEEKS.length;i++){const button=el('button','chip'+(rankWeek===i?' active':''),i+'주차');button.type='button';button.setAttribute('aria-pressed',String(rankWeek===i));button.onclick=()=>{rankWeek=i;showRank();};weekRow.append(button);}
+  controls.append(weekRow);
+ }
+ const periodText=rankPeriod==='week'?rankWeek+'주차 · '+LEAGUE_WEEKS[rankWeek-1].label:('전체 누적 · '+(d.weeksCount?('1~'+d.weeksCount+'주차 · '+LEAGUE_WEEKS[0].label.slice(0,10)+'~'+LEAGUE_WEEKS[Math.max(0,d.weeksCount-1)].label.slice(11)): '시즌 시작 전'));
+ controls.append(el('p','sub rankPeriodLabel',periodText));c.append(controls);
+ let columns=[],rows=[],maxPoints=rankPeriod==='week'?1:d.weeksCount;
+ if(rankMode==='school'){
+  const recordMax=60*maxPoints,participationMax=40*maxPoints,totalMax=100*maxPoints;
+  columns=['순위','학교','기록 /'+recordMax,'참가 /'+participationMax,'합계 /'+totalMax];
+  rows=d.schools.map((x,i)=>[(i+1)+'위',x.school+(x.needsPopulation?' · 학생 수 입력 필요':''),x.needsPopulation?'—':x.recordScore.toFixed(1),x.needsPopulation?'—':x.participationScore.toFixed(1),x.needsPopulation?'—':x.total.toFixed(1)]);
+ }else if(rankMode==='overall'){
+  columns=['순위','닉네임 · 소속','3-3-3','3-6-3','사이클','개인합계 /'+(300*maxPoints)];
+  rows=d.individuals.map(x=>[x.rank+'위',x.nick+' · '+x.school+' '+x.grade+'학년',Number(x.scores['3-3-3']).toFixed(1)+'점',Number(x.scores['3-6-3']).toFixed(1)+'점',Number(x.scores['3-6-3C']).toFixed(1)+'점',x.total.toFixed(1)]);
+ }else{
+  columns=['순위','닉네임 · 소속',rankPeriod==='week'?'주간 기록':'최고기록',rankPeriod==='week'?'순위 점수':'누적 점수'];
+  rows=d.bestByEvent[rankMode].map(x=>[x.rank+'위',(x.user?.nick||x.nick||'')+' · '+(x.user?.school||x.school||'')+' '+(x.user?.grade||x.grade||'')+'학년',fmt(x.sec)+'초',x.score.toFixed(1)+'점']);
+ }
+ const tiles=el('div','scoreTiles');
+ for(const [i,row] of rows.slice(0,limit).entries()){
+  const tile=el('div','scoreTile'),position=['🥇','🥈','🥉'][i]+' '+row[0];
+  tile.append(el('span','rankTilePosition',position),el('strong','',rankMode==='school'?row[1].split(' · ')[0]:row[1].split(' · ')[0]));
+  let detail='',metric='';
+  if(rankMode==='school'){detail='기록 '+row[2]+'점 · 참가 '+row[3]+'점';metric=row[4]+'점';}
+  else if(rankMode==='overall'){
+   detail=OFFICIAL.map((event,index)=>event+' ('+row[index+2]+')').join(' · ');
+   metric=row[5]+'점';
+  }else{
+   detail=rankPeriod==='week'?'순위 점수 '+row[3]:'최고 기록 '+row[2];
+   metric=rankPeriod==='week'?row[2]:row[3];
+  }
+  tile.append(el('span','rankTileDetail',detail),el('strong','rankTileMetric',metric));tiles.append(tile);
+ }
+ if(rows.length)c.append(tiles);else c.append(el('p','hint','아직 해당 기간에 등록된 기록이 없습니다.'));
+ if(rows.length>limit){const extra=el('div','rankExtra'),scroll=el('div','rankExtraScroll');extra.setAttribute('role','region');extra.setAttribute('aria-label','추가 순위 목록');scroll.append(renderTable(columns,rows.slice(limit)));extra.append(scroll);c.append(extra);}
+ if(rankMode!=='school'&&currentUserUid){
+  const p=rankMode==='overall'?d.individuals.find(x=>x.uid===currentUserUid):d.bestByEvent[rankMode].find(x=>x.uid===currentUserUid),box=el('div','myRank');
+  box.append(el('strong','','🙋 내 순위: '+(p?p.rank+'위':'기록 없음')));
+  if(p){const value=rankMode==='overall'?p.total.toFixed(1)+'점':rankPeriod==='week'?fmt(p.sec)+'초':p.score.toFixed(1)+'점 누적 · 최고 '+fmt(p.sec)+'초';box.append(el('span','',value));}
+  c.append(box);
+ }
 }
 function fmtPoint(n){return n?Number(n).toFixed(1):'미참가';}
 function renderChoice(){holdIdentity();const u=currentUser();let ranking=rankData().individuals.find(x=>x.uid===u?.uid);const box=$('choiceSummary');box.replaceChildren();for(const e of OFFICIAL){const t=el('div','scoreTile');t.append(el('strong','',ranking&&ranking.scores[e]?ranking.scores[e].toFixed(1)+'점':'—'),el('span','',e));box.append(t);}}
