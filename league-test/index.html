@@ -216,28 +216,70 @@ const STORE='stacking-league-2026-demo-v1';
 const GAS_URL='https://script.google.com/macros/s/AKfycbyhzYxs38a9mAjS8KFtdsHWS0wH241XEazyu5ARm2dRdI_na0NU2HaJ8zyDGUQpbHQ/exec'; // Google Apps Script 웹 앱
 const REMOTE=GAS_URL.startsWith('https://script.google.com/macros/s/');
 let studentToken='',teacherToken='',remoteBusy=false;
-function remoteGet(action,args={}){
+// Google ContentService may intermittently return a broken redirect/404.
+// Start a fresh JSONP request on read failure; never reuse a failed redirect URL.
+function remoteGetOnce(action,args={},timeoutMs=8000){
  return new Promise((resolve,reject)=>{
   const cb='stack_cb_'+Math.random().toString(36).slice(2),tag=document.createElement('script');
-  const timer=setTimeout(()=>finish(new Error('서버 응답 시간 초과')),12000);
-  function finish(error,data){clearTimeout(timer);delete window[cb];tag.remove();error?reject(error):resolve(data);}
-  window[cb]=data=>finish(null,data);tag.onerror=()=>finish(new Error('구글 서버에 접속하지 못했습니다.'));
-  tag.src=GAS_URL+'?'+new URLSearchParams({action,...args,callback:cb,nonce:Date.now()});document.head.append(tag);
+  let settled=false;
+  const timer=setTimeout(()=>finish(new Error('서버 응답 시간 초과')),timeoutMs);
+  function finish(error,data){
+   if(settled)return;
+   settled=true;clearTimeout(timer);delete window[cb];tag.remove();
+   error?reject(error):resolve(data);
+  }
+  window[cb]=data=>finish(null,data);
+  tag.onerror=()=>finish(new Error('구글 서버 응답을 불러오지 못했습니다.'));
+  tag.src=GAS_URL+'?'+new URLSearchParams({action,...args,callback:cb,nonce:Date.now()+'-'+Math.random().toString(36).slice(2)});
+  document.head.append(tag);
  });
+}
+async function remoteGet(action,args={},maxAttempts=2){
+ let lastError;
+ for(let attempt=0;attempt<maxAttempts;attempt++){
+  try{
+   const timeout=action==='receipt'?5000:(attempt===0?8000:10000);
+   return await remoteGetOnce(action,args,timeout);
+  }catch(error){
+   lastError=error;
+   if(attempt+1<maxAttempts)await new Promise(done=>setTimeout(done,450));
+  }
+ }
+ throw new Error('Google Apps Script 응답 실패: '+(lastError?.message||'연결 오류')+'. 배포 URL 및 접근 권한을 확인해 주세요.');
 }
 async function remoteWrite(action,args={}){
  if(!REMOTE)throw Error('Apps Script 웹앱 주소가 미설정 상태입니다.');
  const requestId=args.requestId||'request-'+crypto.randomUUID();
- await fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({...args,action,requestId})});
- // Apps Script may wait on the sheet lock. Keep the receipt poll alive longer than that wait.
+ const body=JSON.stringify({...args,action,requestId});
+ // no-cors can report a redirect failure even after doPost successfully saved the request.
+ // Always verify the server-side receipt before deciding whether the write succeeded.
+ async function sendWrite(){
+  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),9500);
+  try{
+   await fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body,signal:controller.signal});
+  }catch(error){
+   // Receipt polling below is authoritative; do not treat this as a failed save yet.
+  }finally{clearTimeout(timeout);}
+ }
+ await sendWrite();
+ let lastNetworkError=null;
  for(let i=0;i<35;i++){
   await new Promise(done=>setTimeout(done,i<5?500:800));
-  const result=await remoteGet('receipt',{id:requestId});
-  if(result.pending)continue;
-  if(!result.ok)throw Error(result.error||'구글 시트 요청 실패');
-  return result;
+  try{
+   const result=await remoteGet('receipt',{id:requestId},1);
+   if(!result.pending){
+    if(!result.ok)throw Error(result.error||'구글 시트 요청 실패');
+    return result;
+   }
+  }catch(error){
+   // Explicit server errors are not transient network errors and must be shown.
+   if(!error.message.startsWith('Google Apps Script 응답 실패:'))throw error;
+   lastNetworkError=error;
+  }
+  // Retry the same idempotent request ID once, in case the initial POST never arrived.
+  if(i===11)await sendWrite();
  }
- throw Error('서버 처리 결과를 확인하지 못했습니다. 재시도 전 시트 기록을 확인하세요.');
+ throw Error('서버 처리 결과를 확인하지 못했습니다. '+(lastNetworkError?'Google 서버 통신 오류가 반복됩니다. ':'')+'기록 중복 방지를 위해 다시 시도하기 전 시트를 확인하세요.');
 }
 async function remoteRefresh(){
  if(!REMOTE)return;
@@ -281,8 +323,16 @@ async function remoteAuth(){
  if(remoteBusy)return;const school=$('authSchool').value,grade=Number($('authGrade').value),nick=$('authNick').value.trim(),pin=$('authPin').value;
  if(!school||!nick||!/^[0-9]{4}$/.test(pin)){setText('authMessage','학교·학년·닉네임·PIN을 확인해 주세요.');return;}
  remoteBusy=true;$('authSubmit').disabled=true;
- try{const result=await remoteWrite(authMode==='join'?'join':'login',{school,grade,nick,pin});currentUserUid=result.uid;studentToken=result.token;session={uid:result.uid};$('authPin').value='';teacherVerified=false;teacherToken='';await remoteRefresh();holdIdentity();renderChoice();showPage('choice');toast('✅ 구글 시트 계정으로 연결했습니다.');}
- catch(err){setText('authMessage','⚠️ '+err.message);}finally{remoteBusy=false;$('authSubmit').disabled=false;}
+ try{
+  const result=await remoteWrite(authMode==='join'?'join':'login',{school,grade,nick,pin});
+  currentUserUid=result.uid;studentToken=result.token;session={uid:result.uid};
+  $('authPin').value='';teacherVerified=false;teacherToken='';
+  // A temporary ranking/snapshot error must not undo a successful server login.
+  if(!users.some(user=>user.uid===result.uid))users.push({uid:result.uid,school,grade,nick});
+  holdIdentity();renderChoice();showPage('choice');toast('✅ 로그인되었습니다.');
+  remoteRefresh().catch(error=>setText('backendStatus','⚠️ 로그인 성공 · 순위 갱신 지연: '+error.message));
+ }catch(err){setText('authMessage','⚠️ '+err.message);}
+ finally{remoteBusy=false;$('authSubmit').disabled=false;}
 }
 function rankData(){let valid=allRecords().filter(r=>r.valid!==false&&OFFICIAL.includes(r.event)&&Number(r.sec)>0);const bestByEvent={};for(const e of OFFICIAL){const best=new Map();for(const r of valid.filter(x=>x.event===e)){if(!best.has(r.uid)||best.get(r.uid).sec>r.sec)best.set(r.uid,r);}const sorted=[...best.values()].sort((a,b)=>a.sec-b.sec||a.uid.localeCompare(b.uid));let last=NaN,rank=0;let items=sorted.map((r,i)=>{if(!Number.isFinite(last)||Math.abs(r.sec-last)>=.0005)rank=i+1;last=r.sec;return {...r,rank,score:sorted.length===1?100:1+99*(sorted.length-rank)/(sorted.length-1),user:byId(r.uid)};});bestByEvent[e]=items;}
  const people=new Map();for(const e of OFFICIAL){for(const entry of bestByEvent[e]){if(!people.has(entry.uid))people.set(entry.uid,{uid:entry.uid,school:entry.user?.school||'',grade:entry.user?.grade||'',nick:entry.user?.nick||'',scores:Object.fromEntries(OFFICIAL.map(k=>[k,0]))});people.get(entry.uid).scores[e]=entry.score;}}
