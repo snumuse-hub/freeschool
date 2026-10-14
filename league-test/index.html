@@ -261,11 +261,11 @@ function remoteGetOnce(action,args={},timeoutMs=10000){
   document.head.append(tag);
  });
 }
-async function remoteGet(action,args={},maxAttempts=3){
+async function remoteGet(action,args={},maxAttempts=3,timeoutOverrideMs=0){
  let lastError;
  for(let attempt=0;attempt<maxAttempts;attempt++){
   try{
-   const timeout=action==='receipt'?5000:[9000,12000,15000][Math.min(attempt,2)];
+   const timeout=timeoutOverrideMs||(action==='receipt'?5000:[9000,12000,15000][Math.min(attempt,2)]);
    return await remoteGetOnce(action,args,timeout);
   }catch(error){
    lastError=error;
@@ -278,10 +278,11 @@ async function remoteWrite(action,args={}){
  if(!REMOTE)throw Error('Apps Script 웹앱 주소가 미설정 상태입니다.');
  const requestId=args.requestId||'request-'+crypto.randomUUID();
  const body=JSON.stringify({...args,action,requestId});
- // no-cors can report a redirect failure even after doPost successfully saved the request.
- // Always verify the server-side receipt before deciding whether the write succeeded.
+ const isAuthRequest=action==='login'||action==='join';
+ // Login and signup need more time for a slow Google Sheets response.
  async function sendWrite(){
-  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),9500);
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),isAuthRequest?30000:9500);
   try{
    await fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body,signal:controller.signal});
   }catch(error){
@@ -289,6 +290,26 @@ async function remoteWrite(action,args={}){
   }finally{clearTimeout(timeout);}
  }
  await sendWrite();
+ if(isAuthRequest){
+  let lastNetworkError=null,retried=false,waitMs=750;
+  const startedAt=Date.now(),deadline=startedAt+60000;
+  while(Date.now()<deadline){
+   await new Promise(done=>setTimeout(done,waitMs));
+   try{
+    const result=await remoteGet('receipt',{id:requestId},1,12000);
+    if(!result.pending){
+     if(!result.ok)throw Error(result.error||'구글 시트 요청 실패');
+     return result;
+    }
+   }catch(error){
+    if(!error.message.startsWith('Google Apps Script 응답 실패:'))throw error;
+    lastNetworkError=error;
+   }
+   if(!retried&&Date.now()-startedAt>=30000){await sendWrite();retried=true;}
+   waitMs=Math.min(Math.round(waitMs*1.5),4000);
+  }
+  throw Error('서버 처리 결과를 확인하지 못했습니다. '+(lastNetworkError?'Google 서버 통신 오류가 반복됩니다. ':'')+'기록 중복 방지를 위해 다시 시도하기 전 시트를 확인하세요.');
+ }
  let lastNetworkError=null;
  for(let i=0;i<35;i++){
   await new Promise(done=>setTimeout(done,i<5?500:800));
@@ -299,11 +320,9 @@ async function remoteWrite(action,args={}){
     return result;
    }
   }catch(error){
-   // Explicit server errors are not transient network errors and must be shown.
    if(!error.message.startsWith('Google Apps Script 응답 실패:'))throw error;
    lastNetworkError=error;
   }
-  // Retry the same idempotent request ID once, in case the initial POST never arrived.
   if(i===11)await sendWrite();
  }
  throw Error('서버 처리 결과를 확인하지 못했습니다. '+(lastNetworkError?'Google 서버 통신 오류가 반복됩니다. ':'')+'기록 중복 방지를 위해 다시 시도하기 전 시트를 확인하세요.');
