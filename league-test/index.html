@@ -236,6 +236,25 @@ const GAS_URL='https://script.google.com/macros/s/AKfycbyhzYxs38a9mAjS8KFtdsHWS0
 const REMOTE=GAS_URL.startsWith('https://script.google.com/macros/s/');
 let studentToken='',teacherToken='',remoteBusy=false;
 // Google ContentService may intermittently return a broken redirect/404.
+// Read the response as data without Google account cookies. Fall back to JSONP
+// only when the browser cannot complete the CORS read.
+async function remoteFetchOnce(action,args={},timeoutMs=10000){
+ const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),timeoutMs);
+ const callback='stack_data';
+ try{
+  const url=GAS_URL+'?'+new URLSearchParams({action,...args,callback,nonce:Date.now()+'-'+Math.random().toString(36).slice(2)});
+  const response=await fetch(url,{mode:'cors',credentials:'omit',redirect:'follow',signal:controller.signal});
+  if(!response.ok)throw Error('Google 응답 HTTP '+response.status);
+  const text=(await response.text()).trim(),prefix=callback+'(';
+  if(!text.startsWith(prefix)||!text.endsWith(');'))throw Error('Google 서버가 올바른 데이터 대신 다른 페이지를 반환했습니다.');
+  return JSON.parse(text.slice(prefix.length,-2));
+ }finally{clearTimeout(timer);}
+}
+async function remoteReadOnce(action,args,timeoutMs){
+ try{return await remoteFetchOnce(action,args,timeoutMs);}
+ catch(error){return remoteGetOnce(action,args,timeoutMs);}
+}
 // Start a fresh JSONP request on read failure; never reuse a failed redirect URL.
 function remoteGetOnce(action,args={},timeoutMs=10000){
  return new Promise((resolve,reject)=>{
@@ -266,7 +285,7 @@ async function remoteGet(action,args={},maxAttempts=3,timeoutOverrideMs=0){
  for(let attempt=0;attempt<maxAttempts;attempt++){
   try{
    const timeout=timeoutOverrideMs||(action==='receipt'?5000:[9000,12000,15000][Math.min(attempt,2)]);
-   return await remoteGetOnce(action,args,timeout);
+   return await remoteReadOnce(action,args,timeout);
   }catch(error){
    lastError=error;
    if(attempt+1<maxAttempts)await new Promise(done=>setTimeout(done,600*Math.pow(2,attempt)));
