@@ -19,6 +19,7 @@
 .aiHistoryPanel .historyRow span{color:#745344}
 .aiHistoryPanel .historyRow b{color:#e65c23}
 .aiHistoryPanel .hint{font-size:12px;color:#816952}
+.historyRowSelect{cursor:pointer;justify-content:flex-start}.historyRowSelect input{accent-color:#ff852f;flex:0 0 auto}.historyRowSelect span{flex:1}.historyDelete{margin-top:12px}
 .rankExtra{margin-top:14px;border:1px solid #eed8c2;border-radius:15px;padding:12px;background:#fffdf8}.rankExtra>summary{font-weight:850;color:#ad501b;cursor:pointer;padding:10px}.rankExtraScroll{max-height:320px;overflow:auto;overscroll-behavior:contain}.myRank{display:flex;justify-content:space-between;padding:14px;border:1px solid #ffbf73;border-radius:13px;background:#ffedcf;margin-top:12px}.scoreTile strong{font-size:clamp(14px,2vw,21px);overflow-wrap:anywhere}
 
 /* 전체 화면 다크 테마와 읽기 편한 둥근 글꼴 */
@@ -165,8 +166,9 @@ h2{font-size:24px}h3{font-size:19px}.sub{font-size:14px}.hint{font-size:13px}
    <h3 style="margin-top:16px">📅 날짜별 기록 현황</h3>
    <p class="hint">최신 기록부터 표시 · 기록이 많으면 아래 목록을 스크롤하세요.</p>
    <div id="aiHistoryList" class="historyScroll" role="region" aria-label="선택 종목 날짜별 기록 목록" tabindex="0"></div>
+   <button class="btn red historyDelete" id="aiHistoryDelete" type="button" disabled>선택 기록 삭제</button>
  </div>
- <h3 style="margin-top:23px">✍️ 2. 기록하기</h3><div class="modeRow"><button class="modeChoice active" type="button" data-save-mode="auto">⚡ 자동저장<small>정상 종료 시 시안 기록에 저장</small></button><button class="modeChoice" type="button" data-save-mode="confirm">✅ 확인 후 저장<small>측정값을 확인하고 저장/취소</small></button></div>
+ <h3 style="margin-top:23px">✍️ 2. 기록하기</h3><div class="modeRow"><button class="modeChoice" type="button" data-save-mode="auto">⚡ 자동저장<small>정상 종료 시 시안 기록에 저장</small></button><button class="modeChoice active" type="button" data-save-mode="confirm">✅ 확인 후 저장<small>측정값을 확인하고 저장/취소</small></button></div>
  <div class="cameraShell" id="cameraShell"><video id="camVideo" playsinline muted autoplay></video><canvas id="camCanvas"></canvas><div class="cameraEmpty" id="cameraEmpty"><span style="font-size:43px">📷</span><strong>카메라를 켜 주세요!</strong><span>양손이 들어오는 곳을 인식해요</span></div><span class="cameraIndicator" id="cameraLabel">카메라 꺼짐</span></div>
  <div class="timer" id="cameraTime">0.000<small>초</small></div><div class="status" id="cameraStatus" role="status">카메라를 켜고 측정을 준비해 주세요.</div>
  <div class="toolRow"><button class="btn primary" id="cameraToggle" type="button">📷 카메라 켜기</button><button class="btn outline" id="cameraFlip" type="button" disabled>🔁 카메라 전환</button><button class="btn outline" id="cameraSoundTest" type="button">🔊 신호음 테스트</button><button class="btn red" id="cameraReset" type="button">↻ 다시 준비</button></div>
@@ -184,7 +186,7 @@ h2{font-size:24px}h3{font-size:19px}.sub{font-size:14px}.hint{font-size:13px}
  <h3 style="margin-top:20px"><svg class="stackCupHeadingIcon" viewBox="0 0 24 16" aria-hidden="true"><path d="M8 1h8l-1.2 5H9.2L8 1Z" fill="#ffc857" stroke="#14202b" stroke-width=".5" stroke-linejoin="round"/><path d="M2 9h8l-1.2 5H3.2L2 9Z" fill="#ff7658" stroke="#14202b" stroke-width=".5" stroke-linejoin="round"/><path d="M14 9h8l-1.2 5h-5.6L14 9Z" fill="#57d1c0" stroke="#14202b" stroke-width=".5" stroke-linejoin="round"/></svg>종목 선택</h3>
  <div class="eventSections" id="teacherEvents"></div>
  <button class="aiHistoryToggle" id="teacherHistoryToggle" type="button" aria-controls="teacherHistoryPanel" aria-expanded="false">📈 선택 종목 이전 기록 보기 <span id="teacherHistoryArrow" aria-hidden="true">▾</span></button>
- <div id="teacherHistoryPanel" class="panel aiHistoryPanel hidden"><h3 id="teacherHistoryTitle">📈 종목별 이전 기록</h3><p class="hint">학생의 선택 종목 기록 · 낮을수록 좋은 기록</p><div id="teacherHistoryGraph"></div><h3 style="margin-top:16px">📅 날짜별 기록 현황</h3><div id="teacherHistoryList" class="historyScroll" role="region" aria-label="선택 종목 이전 기록 목록" tabindex="0"></div></div>
+ <div id="teacherHistoryPanel" class="panel aiHistoryPanel hidden"><h3 id="teacherHistoryTitle">📈 종목별 이전 기록</h3><p class="hint">학생의 선택 종목 기록 · 낮을수록 좋은 기록</p><div id="teacherHistoryGraph"></div><h3 style="margin-top:16px">📅 날짜별 기록 현황</h3><div id="teacherHistoryList" class="historyScroll" role="region" aria-label="선택 종목 이전 기록 목록" tabindex="0"></div><button class="btn red historyDelete" id="teacherHistoryDelete" type="button" disabled>선택 기록 삭제</button></div>
  <div class="field" style="margin-top:20px"><span class="fieldLabel">측정 방법</span><div class="modeRow teacherMeasureModes"><button class="modeChoice active" type="button" data-teacher-method="phone">📱 휴대폰 타이머<small>앱 안에서 시작·정지</small></button><button class="modeChoice" type="button" data-teacher-method="tablet">📟 패드 타이머<small>스태킹 타이머 기록 입력</small></button></div></div>
  <div id="teacherPhonePanel" class="teacherMeasurePanel"><div class="timer teacherTimer"><span id="teacherTimerValue">0.000</span><small>초</small></div><div class="toolRow teacherTimerControls"><button class="btn primary" id="teacherTimerStart" type="button">▶ 시작</button><button class="btn red" id="teacherTimerStop" type="button" disabled>■ 정지하고 기록 추가</button></div><p class="hint">정지하면 임시 기록 목록에 추가됩니다. 저장할 기록을 선택해 공식 기록으로 등록하세요.</p></div>
  <div id="teacherTabletPanel" class="teacherMeasurePanel hidden"><div class="field"><label for="teacherSeconds">⏱️ 패드에서 측정한 시간 (초)</label><input id="teacherSeconds" type="text" inputmode="decimal" placeholder="예: 8.245" style="max-width:280px"><p class="helper">소수 셋째 자리까지 입력하고 목록에 추가하세요.</p></div><button class="btn outline" id="teacherManualAdd" type="button">➕ 측정 기록 목록에 추가</button></div>
@@ -358,10 +360,11 @@ const DIFFICULTIES=[['drop','🥤 컵을 자꾸 떨어뜨려요'],['order','🔀
 const $=id=>document.getElementById(id);
 const pages=['home','choice','ai','teacher','nextstudent','result','coach'];
 let schoolPop={신월중:360,경원중:320,감계중:280,반림중:335,진영중:310,자유학교:0};
-let users=[],records=[],session=null,teacherVerified=false,teacherSchool='',currentPage='home',lastMode='ai',lastRecord=null,lastResultEvent='',selectedEvent='3-3-3',saveMode='auto',rankMode='school',rankPeriod='week',rankWeek=currentLeagueWeek(),authMode='login',coachReturn='choice',coachSelections=[],cameraFacing='environment';
+let users=[],records=[],session=null,teacherVerified=false,teacherSchool='',currentPage='home',lastMode='ai',lastRecord=null,lastResultEvent='',selectedEvent='3-3-3',saveMode='confirm',rankMode='school',rankPeriod='week',rankWeek=currentLeagueWeek(),authMode='login',coachReturn='choice',coachSelections=[],cameraFacing='environment';
 let currentUserUid='',state='idle',stream=null,hands=null,cameraActive=false,cameraBusy=false,processing=false,cameraLoopId=0,handScriptPromise=null,clockStart=0,readyAt=0,leaveAt=0,returnAt=0,soundContext=null,testTimer=false,measureSource='AI',pendingMeasurement=null,autoSaveToken=0,frontMirror=false;
 let fakeCounter=0;
 let teacherCandidates=[],teacherSelectedCandidateId='',teacherMeasureMode='phone',teacherTimerActive=false,teacherTimerNeedsReset=false,teacherTimerStartedAt=0,teacherTimerRaf=0,teacherSaveBusy=false;
+let selectedHistoryRecordId='',historyDeleteBusy=false;
 function rand(){fakeCounter++;return (Math.sin(fakeCounter*29.13)*10000)%1;}
 function demoSeed(){const sampleUsers=[],sampleRecords=[];const schoolCaps=[22,19,18,23,20];const bases=[4.2,5.5,16.7,8.4,12.8];let number=0;
  for(let s=0;s<SCHOOLS.length;s++){for(let i=0;i<schoolCaps[s];i++){number++;let uid='sample-'+number;sampleUsers.push({uid,school:SCHOOLS[s],grade:1+i%3,nick:['번개손','스택왕','컵고수','초고속','도전왕','반짝컵','리듬짱','컵마스터'][i%8]+'_'+(s+1)+String(i+1).padStart(2,'0'),demo:true});for(let e=0;e<3;e++){if((i+e)%9===0)continue;let base=bases[e]+((i*37+s*17+e*23)%50)/12+((s+e)%4)*.17;for(let k=0;k<2;k++)sampleRecords.push({id:'seed-'+uid+'-'+e+'-'+k,uid,event:EVENTS[e],sec:Number((base+k*.14+(i%3)*.05).toFixed(3)),at:new Date(2026,8,4+i%20,9+k).toISOString(),valid:true,source:'가상 기록'});}}}
@@ -543,8 +546,8 @@ function showRank(){
 function fmtPoint(n){return n?Number(n).toFixed(1):'미참가';}
 function renderChoice(){holdIdentity();const u=currentUser();let ranking=rankData().individuals.find(x=>x.uid===u?.uid);const box=$('choiceSummary');box.replaceChildren();for(const e of OFFICIAL){const t=el('div','scoreTile');t.append(el('strong','',ranking&&ranking.scores[e]?ranking.scores[e].toFixed(1)+'점':'—'),el('span','',e));box.append(t);}}
 function stackCupIcon(){const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 24 16');svg.setAttribute('class','stackCupIcon');svg.setAttribute('aria-hidden','true');const cups=[['M8 1h8l-1.2 5H9.2L8 1Z','#ffc857'],['M2 9h8l-1.2 5H3.2L2 9Z','#ff7658'],['M14 9h8l-1.2 5h-5.6L14 9Z','#57d1c0']];for(const [d,fill] of cups){const path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('d',d);path.setAttribute('fill',fill);path.setAttribute('stroke','#14202b');path.setAttribute('stroke-width','.5');path.setAttribute('stroke-linejoin','round');svg.append(path);}return svg;}
-function listEvents(target){target.replaceChildren();const groups=[{name:'공식 리그',className:'officialGroup',events:OFFICIAL},{name:'연습용',className:'practiceGroup',events:EVENTS.filter(e=>!OFFICIAL.includes(e))}];for(const group of groups){const section=el('section','eventGroup '+group.className);const heading=el('h4','eventGroupTitle',(group.className==='officialGroup'?'🏆 ':'🎯 ')+group.name);const grid=el('div','eventGrid');for(const e of group.events){const b=el('button','eventBtn'+(e===selectedEvent?' active':''));b.type='button';const label=el('b','');label.append(stackCupIcon(),el('span','eventName',e));b.append(label);b.setAttribute('aria-label',group.name+' '+e);b.addEventListener('click',()=>{if(currentPage==='ai'&&state==='running'){toast('측정 중에는 종목을 변경할 수 없습니다.');return;}selectedEvent=e;closeAiHistory();pendingMeasurement=null;$('cameraPending').classList.add('hidden');updateCameraState('search',e+' 준비 중 · 양손을 시작 위치로!',false);listEvents($('aiEvents'));listEvents($('teacherEvents'));if(currentPage==='teacher'){renderTeacherCandidates();openTeacherHistory();}});grid.append(b);}section.append(heading,grid);target.append(section);}}
-function choose(n){if(!currentUser()){showPage('home');return;}lastMode=n;if(n==='ai'){teacherVerified=false;teacherSchool='';saveMode='auto';renderMode();selectedEvent='3-3-3';listEvents($('aiEvents'));closeAiHistory();setText('cameraTime','0.000');cameraStatus('카메라를 켜고 측정을 준비해 주세요.');showPage('ai');}
+function listEvents(target){target.replaceChildren();const groups=[{name:'공식 리그',className:'officialGroup',events:OFFICIAL},{name:'연습용',className:'practiceGroup',events:EVENTS.filter(e=>!OFFICIAL.includes(e))}];for(const group of groups){const section=el('section','eventGroup '+group.className);const heading=el('h4','eventGroupTitle',(group.className==='officialGroup'?'🏆 ':'🎯 ')+group.name);const grid=el('div','eventGrid');for(const e of group.events){const b=el('button','eventBtn'+(e===selectedEvent?' active':''));b.type='button';const label=el('b','');label.append(stackCupIcon(),el('span','eventName',e));b.append(label);b.setAttribute('aria-label',group.name+' '+e);b.addEventListener('click',()=>{if(currentPage==='ai'&&state==='running'){toast('측정 중에는 종목을 변경할 수 없습니다.');return;}selectedHistoryRecordId='';selectedEvent=e;closeAiHistory();pendingMeasurement=null;$('cameraPending').classList.add('hidden');updateCameraState('search',e+' 준비 중 · 양손을 시작 위치로!',false);listEvents($('aiEvents'));listEvents($('teacherEvents'));if(currentPage==='teacher'){renderTeacherCandidates();openTeacherHistory();}});grid.append(b);}section.append(heading,grid);target.append(section);}}
+function choose(n){if(!currentUser()){showPage('home');return;}lastMode=n;if(n==='ai'){teacherVerified=false;teacherSchool='';saveMode='confirm';renderMode();selectedEvent='3-3-3';listEvents($('aiEvents'));closeAiHistory();setText('cameraTime','0.000');cameraStatus('카메라를 켜고 측정을 준비해 주세요.');showPage('ai');}
  else if(n==='teacher'){teacherSchool=currentUser().school;teacherVerified=false;$('teacherGate').classList.remove('hidden');$('teacherEntry').classList.add('hidden');$('teacherCode').value='';selectedEvent='3-3-3';listEvents($('teacherEvents'));showPage('teacher');}}
 function renderMode(){document.querySelectorAll('[data-save-mode]').forEach(e=>e.classList.toggle('active',e.dataset.saveMode===saveMode));}
 function cameraStatus(s,mode){setText('cameraStatus',s);$('cameraStatus').className='status'+(mode==='good'?' good':mode==='live'?' live':'');}
@@ -575,8 +578,44 @@ async function saveRemote(m){
  catch(err){toast('⚠️ '+err.message);}finally{remoteBusy=false;}
 }
 function recordForUser(uid,event){return allRecords().filter(r=>r.uid===uid&&r.event===event).sort((a,b)=>new Date(b.at)-new Date(a.at));}
+function historyChoice(record,kind,index){
+ const row=el('label','historyRow historyRowSelect'),radio=el('input');
+ radio.type='radio';radio.name=kind+'HistoryRecord';radio.value=record.id;
+ radio.checked=selectedHistoryRecordId===record.id;radio.disabled=historyDeleteBusy;
+ radio.setAttribute('aria-label',fmt(record.sec)+'초 기록 선택');
+ radio.addEventListener('change',()=>{selectedHistoryRecordId=record.id;$((kind==='ai'?'ai':'teacher')+'HistoryDelete').disabled=false;});
+ const date=new Date(record.at).toLocaleString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+ row.append(radio,el('span','',date+' · '+(index===0?'가장 최근':(index+1)+'번째')),el('b','',fmt(record.sec)+'초'));
+ return row;
+}
+function updateHistoryDeleteButton(kind,list){
+ $(kind+'HistoryDelete').disabled=historyDeleteBusy||!list.some(r=>r.id===selectedHistoryRecordId);
+}
+async function deleteHistoryRecord(kind){
+ if(historyDeleteBusy)return;
+ if(kind==='teacher'&&!teacherVerified){toast('교사 인증을 다시 확인해 주세요.');return;}
+ const record=recordForUser(currentUserUid,selectedEvent).find(r=>r.id===selectedHistoryRecordId);
+ if(!record){toast('삭제할 기록을 선택해 주세요.');return;}
+ if(!window.confirm(selectedEvent+' '+fmt(record.sec)+'초 기록을 삭제할까요? 삭제하면 순위에서도 제외됩니다.'))return;
+ historyDeleteBusy=true;updateHistoryDeleteButton(kind,[record]);
+ try{
+  if(REMOTE){
+   const result=await remoteWrite('deleteRecord',{token:studentToken,teacherToken:kind==='teacher'?teacherToken:'',recordId:record.id});
+   if(result.deletedId!==record.id)throw Error('삭제 결과를 확인하지 못했습니다.');
+  }
+  records=records.filter(r=>r.id!==record.id);persist();
+  if(lastRecord?.id===record.id)lastRecord=null;
+  teacherCandidates=teacherCandidates.filter(item=>item.recordId!==record.id);saveTeacherTrials();
+  selectedHistoryRecordId='';showRank();
+  if(REMOTE)try{await remoteRefresh();}catch(syncError){toast('기록은 삭제됐습니다. 순위 새로고침이 지연됩니다.');}
+  if(kind==='ai')renderAiHistory();else{renderTeacherHistory();renderTeacherCandidates();}
+  toast('✅ 선택한 기록을 삭제했습니다.');
+ }catch(error){toast('⚠️ 삭제 실패: '+String(error.message||error));}
+ finally{historyDeleteBusy=false;if(kind==='ai')renderAiHistory();else renderTeacherHistory();}
+}
 function closeAiHistory(){
   const panel=$('aiHistoryPanel'),button=$('aiHistoryToggle');
+  selectedHistoryRecordId='';$('aiHistoryDelete').disabled=true;
   panel.classList.add('hidden');button.setAttribute('aria-expanded','false');
   setText('aiHistoryArrow','▾');
 }
@@ -585,12 +624,10 @@ function renderAiHistory(){
   setText('aiHistoryTitle','📈 '+selectedEvent+' 이전 기록 그래프');
   plotHistory(list,'aiHistoryGraph');
   const elList=$('aiHistoryList');elList.replaceChildren();
+  updateHistoryDeleteButton('ai',list);
   if(!list.length){elList.append(el('p','hint','🐣 아직 저장한 기록이 없어요. 첫 측정을 시작해 보세요!'));return;}
   list.forEach((r,i)=>{
-    const row=el('div','historyRow');
-    const date=new Date(r.at).toLocaleString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
-    row.append(el('span','',date+' · '+(i===0?'가장 최근':(i+1)+'번째')),el('b','',fmt(r.sec)+'초'));
-    elList.append(row);
+    elList.append(historyChoice(r,'ai',i));
   });
   elList.scrollTop=0;
 }
@@ -622,14 +659,14 @@ function resetTeacherTimer(){teacherTimerNeedsReset=false;setText('teacherTimerV
 function startTeacherTimer(){if(!teacherVerified||teacherTimerActive)return;if(teacherTimerNeedsReset){resetTeacherTimer();return;}teacherTimerStartedAt=performance.now();teacherTimerActive=true;$('teacherTimerStart').disabled=true;$('teacherTimerStart').textContent='▶ 시작';$('teacherTimerStop').disabled=false;updateTeacherTimer();}
 function stopTeacherTimer(addToList=true){if(!teacherTimerActive)return;teacherTimerActive=false;cancelAnimationFrame(teacherTimerRaf);const sec=Math.round(((performance.now()-teacherTimerStartedAt)/1000)*1000)/1000;$('teacherTimerStop').disabled=true;setText('teacherTimerValue',fmt(sec));const added=addToList&&addTeacherCandidate(sec,'phone');if(added){teacherTimerNeedsReset=true;$('teacherTimerStart').disabled=false;$('teacherTimerStart').textContent='↻ 리셋';}else resetTeacherTimer();}
 function addTabletCandidate(){const str=$('teacherSeconds').value.trim();if(!/^\d+(?:\.\d{1,3})?$/.test(str)){toast('초 단위로 8.245처럼 입력해 주세요.');return;}const sec=Number(str);if(addTeacherCandidate(sec,'tablet'))$('teacherSeconds').value='';}
-function renderTeacherHistory(){const list=recordForUser(currentUserUid,selectedEvent);setText('teacherHistoryTitle','📈 '+selectedEvent+' 이전 기록');plotHistory(list,'teacherHistoryGraph',true);const container=$('teacherHistoryList');container.replaceChildren();if(!list.length){container.append(el('p','hint','아직 저장된 기록이 없습니다.'));return;}list.forEach((record,index)=>{const row=el('div','historyRow'),date=new Date(record.at).toLocaleString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});row.append(el('span','',date+' · '+(index===0?'가장 최근':(index+1)+'번째')),el('b','',fmt(record.sec)+'초'));container.append(row);});}
+function renderTeacherHistory(){const list=recordForUser(currentUserUid,selectedEvent);setText('teacherHistoryTitle','📈 '+selectedEvent+' 이전 기록');plotHistory(list,'teacherHistoryGraph',true);const container=$('teacherHistoryList');container.replaceChildren();updateHistoryDeleteButton('teacher',list);if(!list.length){container.append(el('p','hint','아직 저장된 기록이 없습니다.'));return;}list.forEach((record,index)=>container.append(historyChoice(record,'teacher',index)));}
 function openTeacherHistory(){renderTeacherHistory();const panel=$('teacherHistoryPanel'),button=$('teacherHistoryToggle');panel.classList.remove('hidden');button.setAttribute('aria-expanded','true');setText('teacherHistoryArrow','▴');button.firstChild.textContent='📈 '+selectedEvent+' 이전 기록 보기 ';}
 function toggleTeacherHistory(){const panel=$('teacherHistoryPanel'),button=$('teacherHistoryToggle'),open=panel.classList.contains('hidden');if(open)renderTeacherHistory();panel.classList.toggle('hidden',!open);button.setAttribute('aria-expanded',String(open));setText('teacherHistoryArrow',open?'▴':'▾');}
 function showTeacherSaving(state,title,message){const popup=$('teacherSavingPopup');popup.classList.remove('hidden');setText('teacherSavingTitle',title);setText('teacherSavingMessage',message);$('teacherSavingSpinner').classList.toggle('hidden',state!=='saving');$('teacherSavingClose').classList.toggle('hidden',state==='saving');}
 async function saveTeacher(){if(!teacherVerified||!currentUser()){toast('교사 인증과 학생 로그인을 확인해 주세요.');return;}if(teacherSaveBusy)return;const item=teacherCandidates.find(x=>x.id===teacherSelectedCandidateId&&x.event===selectedEvent&&!x.saved);if(!item){toast('등록할 측정 기록을 먼저 선택해 주세요.');return;}teacherSaveBusy=true;updateTeacherSaveButton();showTeacherSaving('saving','기록을 안전하게 저장 중','선택한 '+item.event+' '+fmt(item.sec)+'초 기록을 안전하게 저장하고 있습니다.');lastMode='teacher';const source='교사 '+(item.method==='phone'?'휴대폰 타이머':'패드 타이머');try{let record;if(REMOTE){const result=await remoteWrite('record',{requestId:item.requestId,token:studentToken,teacherToken,event:item.event,sec:item.sec,source});record=result.record;if(!record)throw Error('저장 응답에서 기록을 확인하지 못했습니다.');item.saved=true;item.recordId=record.id;records=records.filter(existing=>existing.id!==record.id);records.push(record);saveTeacherTrials();try{await remoteRefresh();}catch(syncError){}}else{record={id:uid(),uid:currentUserUid,event:item.event,sec:item.sec,at:new Date().toISOString(),source,valid:OFFICIAL.includes(item.event)};records.push(record);persist();item.saved=true;item.recordId=record.id;saveTeacherTrials();}lastRecord=record;lastResultEvent=item.event;teacherSelectedCandidateId='';renderTeacherCandidates();renderTeacherHistory();showTeacherSaving('done','기록 저장 완료',item.event+' '+fmt(item.sec)+'초 기록이 저장되었습니다.');toast('✅ '+item.event+' 기록 저장 완료.');}catch(error){showTeacherSaving('error','저장에 실패했습니다',String(error.message||error));toast('⚠️ 기록 저장에 실패했습니다. 기록 목록은 유지되며 다시 시도할 수 있습니다.');}finally{teacherSaveBusy=false;updateTeacherSaveButton();}}
 function closeTeacherSaving(){if(teacherSaveBusy)return;$('teacherSavingPopup').classList.add('hidden');}
 
-function closeTeacherHistory(){const panel=$('teacherHistoryPanel'),button=$('teacherHistoryToggle');if(!panel||!button)return;panel.classList.add('hidden');button.setAttribute('aria-expanded','false');setText('teacherHistoryArrow','▾');if(button.firstChild)button.firstChild.textContent='📈 선택 종목 이전 기록 보기 ';}
+function closeTeacherHistory(){const panel=$('teacherHistoryPanel'),button=$('teacherHistoryToggle');if(!panel||!button)return;selectedHistoryRecordId='';$('teacherHistoryDelete').disabled=true;panel.classList.add('hidden');button.setAttribute('aria-expanded','false');setText('teacherHistoryArrow','▾');if(button.firstChild)button.firstChild.textContent='📈 선택 종목 이전 기록 보기 ';}
 function openTeacher(resetSession=true){if(!teacherVerified){choose('teacher');return;}if(resetSession){if(teacherTimerActive)stopTeacherTimer(false);selectedEvent='3-3-3';teacherSelectedCandidateId='';loadTeacherCandidates();resetTeacherTimer();setTeacherMeasureMode('phone');closeTeacherHistory();}listEvents($('teacherEvents'));renderTeacherCandidates();renderTeacherHistory();$('teacherGate').classList.add('hidden');$('teacherEntry').classList.remove('hidden');setText('teacherStudentLabel',currentUser()?.nick||'');showPage('teacher');}
 async function teacherUnlock(){const button=$('teacherUnlock'),status=$('teacherGateStatus');if(button.disabled)return;const showStatus=(message,error=false)=>{setText('teacherGateStatus',message);status.classList.remove('hidden');status.style.color=error?'#ff9b88':'#9ce3bd';};button.disabled=true;button.textContent='⏳ 서버에서 교사 인증을 확인하고 있습니다';showStatus('Apps Script에 인증을 요청했습니다. 잠시 기다려 주세요.');try{const user=currentUser();if(!user)throw Error('학생 계정으로 먼저 로그인한 뒤 교사 인증을 해 주세요.');const value=$('teacherCode').value.trim();if(!value)throw Error('교사 관리번호를 입력해 주세요.');if(!REMOTE&&value!=='2468')throw Error('체험 교사 관리번호가 일치하지 않습니다.');if(REMOTE){const r=await remoteWrite('teacherLogin',{school:user.school,code:value});teacherToken=r.teacherToken;}teacherVerified=true;teacherSchool=user.school;$('teacherCode').value='';openTeacher();toast('✅ 교사 인증이 완료되었습니다.');}catch(err){teacherVerified=false;teacherToken='';teacherSchool='';const message=String(err.message||err);showStatus('⚠️ '+message,true);toast('⚠️ '+message);}finally{button.disabled=false;button.textContent='🔓 기록 입력 시작';}}
 function populationPanel(){const p=$('teacherPopulation');p.classList.toggle('hidden');if(p.classList.contains('hidden'))return;const cont=$('populationFields');cont.replaceChildren();for(const school of SCHOOLS){let wrap=el('div','field'),l=el('label','',school),input=el('input');input.type='number';input.min='1';input.max='20000';input.value=schoolPop[school];input.dataset.pop=school;wrap.append(l,input);cont.append(wrap);}}
@@ -692,9 +729,9 @@ function setup(){load();
  }else{
   setText('backendStatus','🧪 테스트 모드 · GAS 웹앱 배포 URL을 연결하기 전에는 브라우저에서만 기록이 저장됩니다.');
  }selectOptions($('authSchool'),SCHOOLS,'학교를 선택하세요');selectOptions($('coachEvent'),EVENTS);$('coachEvent').addEventListener('change',renderCoachPreview);showRank();renderAuth();for(const b of document.querySelectorAll('[data-auth]'))b.addEventListener('click',()=>{authMode=b.dataset.auth;renderAuth();});$('authPin').addEventListener('input',e=>e.target.value=e.target.value.replace(/\D/g,'').slice(0,4));$('nextStudentPin').addEventListener('input',e=>e.target.value=e.target.value.replace(/\D/g,'').slice(0,4));$('authForm').addEventListener('submit',authSubmit);$('nextStudentForm').addEventListener('submit',nextStudentLogin);document.addEventListener('click',e=>{let b=e.target.closest('[data-action]');if(b)action(b.dataset.action);let m=e.target.closest('[data-save-mode]');if(m){saveMode=m.dataset.saveMode;renderMode();}});
- $('teacherUnlock').addEventListener('click',teacherUnlock);$('teacherSave').addEventListener('click',saveTeacher);$('teacherHistoryToggle').addEventListener('click',toggleTeacherHistory);$('teacherTimerStart').addEventListener('click',startTeacherTimer);$('teacherTimerStop').addEventListener('click',()=>stopTeacherTimer(true));$('teacherManualAdd').addEventListener('click',addTabletCandidate);$('teacherSavingClose').addEventListener('click',closeTeacherSaving);document.querySelectorAll('[data-teacher-method]').forEach(button=>button.addEventListener('click',()=>setTeacherMeasureMode(button.dataset.teacherMethod)));$('teacherSettings').addEventListener('click',populationPanel);$('populationSave').addEventListener('click',savePopulation);
+ $('teacherUnlock').addEventListener('click',teacherUnlock);$('teacherSave').addEventListener('click',saveTeacher);$('teacherHistoryToggle').addEventListener('click',toggleTeacherHistory);$('teacherHistoryDelete').addEventListener('click',()=>deleteHistoryRecord('teacher'));$('teacherTimerStart').addEventListener('click',startTeacherTimer);$('teacherTimerStop').addEventListener('click',()=>stopTeacherTimer(true));$('teacherManualAdd').addEventListener('click',addTabletCandidate);$('teacherSavingClose').addEventListener('click',closeTeacherSaving);document.querySelectorAll('[data-teacher-method]').forEach(button=>button.addEventListener('click',()=>setTeacherMeasureMode(button.dataset.teacherMethod)));$('teacherSettings').addEventListener('click',populationPanel);$('populationSave').addEventListener('click',savePopulation);
  $('cameraToggle').addEventListener('click',()=>cameraActive?stopCamera():cameraStart());$('cameraFlip').addEventListener('click',async()=>{if(state==='running'){toast('측정 중 카메라는 전환할 수 없습니다.');return;}cameraFacing=cameraFacing==='user'?'environment':'user';if(cameraActive){stopCamera();await cameraStart();}});$('cameraSoundTest').addEventListener('click',()=>{audio();playSignal('ready');setTimeout(()=>playSignal('end'),1100);toast('🔊 준비음 → 종료음 순서로 재생합니다.');});$('soundVolume').addEventListener('input',e=>setText('soundVolumeLabel',e.target.value+'%'));$('cameraReset').addEventListener('click',cameraReset);$('pendingSave').addEventListener('click',()=>saveMeasurement(pendingMeasurement));$('pendingDiscard').addEventListener('click',()=>{pendingMeasurement=null;$('cameraPending').classList.add('hidden');cameraReset();toast('저장하지 않고 새 측정을 준비합니다.');});$('testStart').addEventListener('click',()=>{if(state==='running'){toast('이미 측정 중입니다.');return;}audio();cameraReset();testTimer=true;playSignal('ready');beginTiming('test');const f=()=>{if(state==='running'&&testTimer){setText('cameraTime',fmt((performance.now()-clockStart)/1000));requestAnimationFrame(f);}};requestAnimationFrame(f);});$('testStop').addEventListener('click',()=>finishTiming('test'));
- $('aiHistoryToggle').addEventListener('click',toggleAiHistory);
+ $('aiHistoryToggle').addEventListener('click',toggleAiHistory);$('aiHistoryDelete').addEventListener('click',()=>deleteHistoryRecord('ai'));
  $('coachShowRecords').addEventListener('click',renderCoachRecords);$('coachCopyOpen').addEventListener('click',()=>copyCoach(true));$('coachCopy').addEventListener('click',()=>copyCoach(false));$('coachOpen').addEventListener('click',()=>window.open(CHATGPT_URL,'_blank'));
  window.addEventListener('pagehide',stopCamera);document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='running')stopCamera();});
 }
