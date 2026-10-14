@@ -49,6 +49,7 @@ function doPost(e){
 }
 function handle_(p){
  const action=text_(p.action,40);
+ if(['teacherStudent','teacherNotes','teacherRecord','teacherEditRecord','teacherDeleteRecord','teacherSaveNote'].includes(action))return teacherAdmin_(p);
  if(action==='join'||action==='login'){
   const school=text_(p.school,30),nick=text_(p.nick,20),grade=Number(p.grade),pin=text_(p.pin,8);
   if(!SCHOOL_NAMES.includes(school)||!/^.{2,16}$/.test(nick)||!/^\d{4}$/.test(pin))throw Error('학교·닉네임·4자리 PIN을 확인해 주세요.');
@@ -125,3 +126,35 @@ function handle_(p){
  throw Error('지원하지 않는 작업입니다.');
 }
 
+
+
+function teacherUser_(teacher,uid){const row=rows_('Users').find(r=>String(r[0])===text_(uid,90));if(!row||String(row[1])!==teacher.school)throw Error('담당 학교의 학생을 다시 선택해 주세요.');return userRow_(row);}
+function teacherNotesSheet_(){const db=SpreadsheetApp.openById(DB_ID);let sh=db.getSheetByName('TeacherNotes');if(!sh){sh=db.insertSheet('TeacherNotes');sh.appendRow(['id','uid','school','date','text','createdAt','updatedAt']);sh.getRange('D:D').setNumberFormat('@');}return sh;}
+function teacherNotes_(teacher,uid){teacherUser_(teacher,uid);const data=teacherNotesSheet_().getDataRange().getValues();return data.slice(1).filter(r=>String(r[1])===uid&&String(r[2])===teacher.school).map(r=>({id:String(r[0]),uid:String(r[1]),date:String(r[3]),text:String(r[4]),createdAt:String(r[5]),updatedAt:String(r[6])})).sort((a,b)=>b.date.localeCompare(a.date)||b.createdAt.localeCompare(a.createdAt));}
+function teacherAdmin_(p){
+ const teacher=session_(p.teacherToken,'teacher');
+ if(p.action==='teacherStudent'){
+  const nick=text_(p.nick,20),row=findUser_(rows_('Users'),teacher.school,nick);if(!row)throw Error('해당 학교에 등록된 닉네임을 찾지 못했습니다.');const user=userRow_(row);
+  return {user,notes:teacherNotes_(teacher,user.uid),records:rows_('Records').map(recordRow_).filter(r=>r.uid===user.uid)};
+ }
+ if(p.action==='teacherNotes')return {notes:teacherNotes_(teacher,text_(p.uid,90))};
+ const user=teacherUser_(teacher,p.uid);
+ if(p.action==='teacherRecord'){
+  const ev=text_(p.event,20),sec=Number(p.sec);if(!EVENT_NAMES.includes(ev)||!Number.isFinite(sec)||sec<1||sec>300)throw Error('종목 또는 기록 범위가 올바르지 않습니다.');
+  const record={id:uuid_(),uid:user.uid,event:ev,sec:Math.round(sec*1000)/1000,at:new Date().toISOString(),source:'교사 타이머',valid:OFFICIAL_EVENT_NAMES.includes(ev)};
+  const sh=sheet_('Records'),row=sh.getLastRow()+1;sh.getRange(row,3).setNumberFormat('@');sh.getRange(row,1,1,7).setValues([[record.id,record.uid,record.event,record.sec,record.at,record.source,record.valid]]);return {record};
+ }
+ if(p.action==='teacherEditRecord'||p.action==='teacherDeleteRecord'){
+  const sh=sheet_('Records'),data=sh.getDataRange().getValues(),id=text_(p.recordId,90);for(let i=1;i<data.length;i++){if(String(data[i][0])!==id)continue;if(String(data[i][1])!==user.uid)throw Error('선택한 학생의 기록만 수정할 수 있습니다.');
+   if(p.action==='teacherDeleteRecord'){sh.deleteRow(i+1);return {deletedId:id};}
+   const sec=Number(p.sec);if(!Number.isFinite(sec)||sec<1||sec>300)throw Error('기록은 1.000~300.000초로 입력해 주세요.');sh.getRange(i+1,4).setValue(Math.round(sec*1000)/1000);data[i][3]=Math.round(sec*1000)/1000;return {record:recordRow_(data[i])};
+  }throw Error('기록을 찾지 못했습니다. 다시 조회해 주세요.');
+ }
+ if(p.action==='teacherSaveNote'){
+  const body=text_(p.text,2000),date=text_(p.date,10);if(!body)throw Error('수업 특이사항을 입력해 주세요.');if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date+'T00:00:00Z'))||new Date(date+'T00:00:00Z').toISOString().slice(0,10)!==date)throw Error('날짜를 확인해 주세요.');
+  const sh=teacherNotesSheet_(),data=sh.getDataRange().getValues(),id=text_(p.noteId,90),now=new Date().toISOString();
+  if(id){const i=data.findIndex((r,i)=>i>0&&String(r[0])===id&&String(r[1])===user.uid&&String(r[2])===teacher.school);if(i<1)throw Error('특이사항을 찾지 못했습니다. 다시 조회해 주세요.');sh.getRange(i+1,4,1,4).setValues([[date,body.startsWith('=')?"'"+body:body,String(data[i][5]),now]]);}
+  else sh.appendRow([uuid_(),user.uid,teacher.school,date,body.startsWith('=')?"'"+body:body,now,now]);return {notes:teacherNotes_(teacher,user.uid)};
+ }
+ throw Error('지원하지 않는 교사 작업입니다.');
+}
