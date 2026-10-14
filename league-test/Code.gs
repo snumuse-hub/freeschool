@@ -87,6 +87,19 @@ function handle_(p){
   sh.getRange(row,1,1,7).setValues([[id,u.uid,ev,Math.round(sec*1000)/1000,at,source,valid]]);
   return {record:{id,uid:u.uid,event:ev,sec:Math.round(sec*1000)/1000,at,source,valid}};
  }
+ if(action==='deleteRecord'){
+  const u=session_(p.token,'student'),id=text_(p.recordId,90);
+  if(!/^[0-9a-fA-F-]{36}$/.test(id))throw Error('삭제할 기록을 다시 선택해 주세요.');
+  if(p.teacherToken){const teacher=session_(p.teacherToken,'teacher');if(teacher.school!==u.school)throw Error('담당 학교가 아닙니다.');}
+  const sh=sheet_('Records'),data=sh.getDataRange().getValues();
+  for(let i=1;i<data.length;i++){
+   if(String(data[i][0])!==id)continue;
+   if(String(data[i][1])!==u.uid)throw Error('본인의 기록만 삭제할 수 있습니다.');
+   sh.deleteRow(i+1);
+   return {deletedId:id};
+  }
+  throw Error('기록을 찾지 못했습니다. 목록을 새로고침해 주세요.');
+ }
  if(action==='population'){
   const teacher=session_(p.teacherToken,'teacher');const counts=p.counts||{};
   const sh=sheet_('Schools'),data=sh.getDataRange().getValues();
@@ -97,3 +110,4 @@ function handle_(p){
  }
  throw Error('지원하지 않는 작업입니다.');
 }
+
