@@ -254,15 +254,15 @@ function remoteGetOnce(action,args={},timeoutMs=8000){
   document.head.append(tag);
  });
 }
-async function remoteGet(action,args={},maxAttempts=2){
+async function remoteGet(action,args={},maxAttempts=3){
  let lastError;
  for(let attempt=0;attempt<maxAttempts;attempt++){
   try{
-   const timeout=action==='receipt'?12000:(attempt===0?8000:10000);
+   const timeout=action==='receipt'?12000:(attempt===0?8000:12000);
    return await remoteGetOnce(action,args,timeout);
   }catch(error){
    lastError=error;
-   if(attempt+1<maxAttempts)await new Promise(done=>setTimeout(done,450));
+   if(attempt+1<maxAttempts)await new Promise(done=>setTimeout(done,attempt===0?500:1500));
   }
  }
  throw new Error('Google Apps Script 응답 실패: '+(lastError?.message||'연결 오류')+'. 배포 URL 및 접근 권한을 확인해 주세요.');
