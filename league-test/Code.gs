@@ -81,7 +81,7 @@ function handle_(p){
   else if(from.toLowerCase().includes('교사'))throw Error('교사 기록에는 교사 인증이 필요합니다.');
   const isTest=from==='test'||from.toLowerCase().includes('테스트');
   const source=isTeacher?'교사 타이머':isTest?'테스트':'AI 자동 측정';
-  const valid=!isTest&&OFFICIAL_EVENT_NAMES.includes(ev); const id=uuid_(),at=new Date().toISOString();
+  const valid=!isTest&&OFFICIAL_EVENT_NAMES.includes(ev)&&!(p.confirmSave===true&&!isTeacher); const id=uuid_(),at=new Date().toISOString();
   const sh=sheet_('Records'),row=sh.getLastRow()+1;
   sh.getRange(row,3).setNumberFormat('@');
   sh.getRange(row,1,1,7).setValues([[id,u.uid,ev,Math.round(sec*1000)/1000,at,source,valid]]);
@@ -97,6 +97,20 @@ function handle_(p){
    if(String(data[i][1])!==u.uid)throw Error('본인의 기록만 삭제할 수 있습니다.');
    sh.deleteRow(i+1);
    return {deletedId:id};
+  }
+  throw Error('기록을 찾지 못했습니다. 목록을 새로고침해 주세요.');
+ }
+ if(action==='registerRecord'){
+  const u=session_(p.token,'student'),id=text_(p.recordId,90);
+  if(!/^[0-9a-fA-F-]{36}$/.test(id))throw Error('등록할 기록을 다시 선택해 주세요.');
+  const sh=sheet_('Records'),data=sh.getDataRange().getValues();
+  for(let i=1;i<data.length;i++){
+   if(String(data[i][0])!==id)continue;
+   if(String(data[i][1])!==u.uid)throw Error('본인의 기록만 등록할 수 있습니다.');
+   if(!OFFICIAL_EVENT_NAMES.includes(String(data[i][2]))||String(data[i][5])!=='AI 자동 측정')throw Error('AI 리그 종목 기록만 공식 등록할 수 있습니다.');
+   if(data[i][6]===true)return {registeredId:id};
+   sh.getRange(i+1,7).setValue(true);
+   return {registeredId:id};
   }
   throw Error('기록을 찾지 못했습니다. 목록을 새로고침해 주세요.');
  }
