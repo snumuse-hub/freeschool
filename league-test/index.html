@@ -166,6 +166,7 @@ h2{font-size:24px}h3{font-size:19px}.sub{font-size:14px}.hint{font-size:13px}
    <h3 style="margin-top:16px">📅 날짜별 기록 현황</h3>
    <p class="hint">최신 기록부터 표시 · 기록이 많으면 아래 목록을 스크롤하세요.</p>
    <div id="aiHistoryList" class="historyScroll" role="region" aria-label="선택 종목 날짜별 기록 목록" tabindex="0"></div>
+   <button class="btn primary historyDelete" id="aiHistoryRegister" type="button" disabled>선택 기록을 공식 기록으로 등록</button>
    <button class="btn red historyDelete" id="aiHistoryDelete" type="button" disabled>선택 기록 삭제</button>
  </div>
  <h3 style="margin-top:23px">✍️ 2. 기록하기</h3><div class="modeRow"><button class="modeChoice" type="button" data-save-mode="auto">⚡ 자동저장<small>정상 종료 시 시안 기록에 저장</small></button><button class="modeChoice active" type="button" data-save-mode="confirm">✅ 확인 후 저장<small>측정값을 확인하고 저장/취소</small></button></div>
@@ -364,7 +365,7 @@ let users=[],records=[],session=null,teacherVerified=false,teacherSchool='',curr
 let currentUserUid='',state='idle',stream=null,hands=null,cameraActive=false,cameraBusy=false,processing=false,cameraLoopId=0,handScriptPromise=null,clockStart=0,readyAt=0,leaveAt=0,returnAt=0,soundContext=null,testTimer=false,measureSource='AI',pendingMeasurement=null,autoSaveToken=0,frontMirror=false;
 let fakeCounter=0;
 let teacherCandidates=[],teacherSelectedCandidateId='',teacherMeasureMode='phone',teacherTimerActive=false,teacherTimerNeedsReset=false,teacherTimerStartedAt=0,teacherTimerRaf=0,teacherSaveBusy=false;
-let selectedHistoryRecordId='',historyDeleteBusy=false;
+let selectedHistoryRecordId='',historyDeleteBusy=false,aiRegisterBusy=false;
 function rand(){fakeCounter++;return (Math.sin(fakeCounter*29.13)*10000)%1;}
 function demoSeed(){const sampleUsers=[],sampleRecords=[];const schoolCaps=[22,19,18,23,20];const bases=[4.2,5.5,16.7,8.4,12.8];let number=0;
  for(let s=0;s<SCHOOLS.length;s++){for(let i=0;i<schoolCaps[s];i++){number++;let uid='sample-'+number;sampleUsers.push({uid,school:SCHOOLS[s],grade:1+i%3,nick:['번개손','스택왕','컵고수','초고속','도전왕','반짝컵','리듬짱','컵마스터'][i%8]+'_'+(s+1)+String(i+1).padStart(2,'0'),demo:true});for(let e=0;e<3;e++){if((i+e)%9===0)continue;let base=bases[e]+((i*37+s*17+e*23)%50)/12+((s+e)%4)*.17;for(let k=0;k<2;k++)sampleRecords.push({id:'seed-'+uid+'-'+e+'-'+k,uid,event:EVENTS[e],sec:Number((base+k*.14+(i%3)*.05).toFixed(3)),at:new Date(2026,8,4+i%20,9+k).toISOString(),valid:true,source:'가상 기록'});}}}
@@ -569,12 +570,12 @@ async function cameraLoop(){if(!cameraActive)return;if(state==='running')setText
 function stopCamera(){cameraActive=false;cancelAnimationFrame(cameraLoopId);cameraLoopId=0;if(stream){for(const t of stream.getTracks())t.stop();stream=null;}$('camVideo').srcObject=null;if(hands){try{const r=hands.close();if(r?.catch)r.catch(()=>{});}catch(e){}hands=null;}$('cameraEmpty').classList.remove('hidden');setText('cameraLabel','카메라 꺼짐');setText('cameraToggle','📷 카메라 켜기');$('cameraFlip').disabled=true;if(state==='running'){testTimer=false;cameraStatus('카메라 종료로 측정을 취소했습니다.');}state='idle';}
 function cameraReset(){pendingMeasurement=null;autoSaveToken++;$('cameraPending').classList.add('hidden');if(state==='running')testTimer=false;clockStart=0;setText('cameraTime','0.000');updateCameraState(cameraActive?'search':'idle',cameraActive?'🖐️ 양손을 시작 영역에 놓아 주세요.':'카메라를 켜고 측정해 주세요.',false);}
 function beginTiming(source){if(state==='running')return;state='running';measureSource=source;clockStart=performance.now();returnAt=0;cameraStatus('⚡ 측정 중! 스태킹을 마친 뒤 손을 시작 영역에 놓으세요.','live');}
-function finishTiming(source){if(state!=='running')return;let t=(performance.now()-clockStart)/1000;state='done';testTimer=false;playSignal('end');setText('cameraTime',fmt(t));cameraStatus('🏁 측정 종료! 신호음이 울렸어요.','good');if(t<1||t>300){cameraStatus('⚠️ 측정 허용 범위(1~300초)를 벗어났어요. 다시 측정해 주세요.');return;}pendingMeasurement={event:selectedEvent,sec:Number(fmt(t)),source:source==='AI'?'AI 손 인식':'테스트 타이머'};if(saveMode==='auto'){saveMeasurement(pendingMeasurement);}
+function finishTiming(source){if(state!=='running')return;let t=(performance.now()-clockStart)/1000;state='done';testTimer=false;playSignal('end');setText('cameraTime',fmt(t));cameraStatus('🏁 측정 종료! 신호음이 울렸어요.','good');if(t<1||t>300){cameraStatus('⚠️ 측정 허용 범위(1~300초)를 벗어났어요. 다시 측정해 주세요.');return;}pendingMeasurement={event:selectedEvent,sec:Number(fmt(t)),source:source==='AI'?'AI 손 인식':'테스트 타이머',confirmSave:saveMode==='confirm'};if(saveMode==='auto'){saveMeasurement(pendingMeasurement);}
  else{setText('pendingTime',fmt(t)+'초');setText('pendingEvent',selectedEvent);$('cameraPending').classList.remove('hidden');}}
-async function saveMeasurement(m){if(!m||!currentUser())return;if(REMOTE)return saveRemote(m);const newRecord={id:uid(),uid:currentUserUid,event:m.event,sec:m.sec,at:new Date().toISOString(),source:m.source,valid:true};records.push(newRecord);persist();lastRecord=newRecord;lastResultEvent=m.event;pendingMeasurement=null;$('cameraPending').classList.add('hidden');renderResult();showPage('result');toast('✅ 시안 기록을 브라우저에 저장했습니다.');}
+async function saveMeasurement(m){if(!m||!currentUser())return;if(REMOTE)return saveRemote(m);const newRecord={id:uid(),uid:currentUserUid,event:m.event,sec:m.sec,at:new Date().toISOString(),source:m.source,valid:m.confirmSave?false:true};records.push(newRecord);persist();lastRecord=newRecord;lastResultEvent=m.event;pendingMeasurement=null;$('cameraPending').classList.add('hidden');if(m.confirmSave){showSavedAiHistory();toast('✅ 기록을 저장했습니다. 목록에서 선택해 공식 기록으로 등록할 수 있습니다.');return;}renderResult();showPage('result');toast('✅ 시안 기록을 브라우저에 저장했습니다.');}
 async function saveRemote(m){
  if(remoteBusy)return;remoteBusy=true;
- try{const result=await remoteWrite('record',{token:studentToken,teacherToken:m.source.includes('교사')?teacherToken:'',event:m.event,sec:m.sec,source:m.source});await remoteRefresh();lastRecord=result.record;lastResultEvent=m.event;pendingMeasurement=null;$('cameraPending').classList.add('hidden');renderResult();showPage('result');toast('✅ 기록을 구글 시트에 저장했습니다.');}
+ try{const result=await remoteWrite('record',{token:studentToken,teacherToken:m.source.includes('교사')?teacherToken:'',event:m.event,sec:m.sec,source:m.source,...(m.confirmSave?{confirmSave:true}:{})});if(m.confirmSave){if(!result.record)throw Error('저장 응답에서 기록을 확인하지 못했습니다.');records=records.filter(r=>r.id!==result.record.id);records.push(result.record);pendingMeasurement=null;$('cameraPending').classList.add('hidden');showSavedAiHistory();toast('✅ 기록을 저장했습니다. 목록에서 선택해 공식 기록으로 등록할 수 있습니다.');try{await remoteRefresh();}catch(syncError){}return;}await remoteRefresh();lastRecord=result.record;lastResultEvent=m.event;pendingMeasurement=null;$('cameraPending').classList.add('hidden');renderResult();showPage('result');toast('✅ 기록을 구글 시트에 저장했습니다.');}
  catch(err){toast('⚠️ '+err.message);}finally{remoteBusy=false;}
 }
 function recordForUser(uid,event){return allRecords().filter(r=>r.uid===uid&&r.event===event).sort((a,b)=>new Date(b.at)-new Date(a.at));}
@@ -583,13 +584,28 @@ function historyChoice(record,kind,index){
  radio.type='radio';radio.name=kind+'HistoryRecord';radio.value=record.id;
  radio.checked=selectedHistoryRecordId===record.id;radio.disabled=historyDeleteBusy;
  radio.setAttribute('aria-label',fmt(record.sec)+'초 기록 선택');
- radio.addEventListener('change',()=>{selectedHistoryRecordId=record.id;$((kind==='ai'?'ai':'teacher')+'HistoryDelete').disabled=false;});
+ radio.addEventListener('change',()=>{selectedHistoryRecordId=record.id;$((kind==='ai'?'ai':'teacher')+'HistoryDelete').disabled=false;if(kind==='ai')updateAiRegisterButton(recordForUser(currentUserUid,selectedEvent));});
  const date=new Date(record.at).toLocaleString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
- row.append(radio,el('span','',date+' · '+(index===0?'가장 최근':(index+1)+'번째')),el('b','',fmt(record.sec)+'초'));
+ row.append(radio,el('span','',date+' · '+(index===0?'가장 최근':(index+1)+'번째')+(kind==='ai'?' · '+(record.valid===false?(OFFICIAL.includes(record.event)&&!String(record.source).includes('테스트')?'공식 등록 전':'연습 기록'):'공식 기록'):'')),el('b','',fmt(record.sec)+'초'));
  return row;
 }
 function updateHistoryDeleteButton(kind,list){
  $(kind+'HistoryDelete').disabled=historyDeleteBusy||!list.some(r=>r.id===selectedHistoryRecordId);
+}
+function canRegisterAiRecord(record){return !!record&&record.uid===currentUserUid&&record.event===selectedEvent&&OFFICIAL.includes(record.event)&&record.valid===false&&!String(record.source).includes('테스트')&&String(record.source).includes('AI');}
+function updateAiRegisterButton(list){$('aiHistoryRegister').disabled=aiRegisterBusy||historyDeleteBusy||!list.some(r=>r.id===selectedHistoryRecordId&&canRegisterAiRecord(r));}
+async function registerAiHistoryRecord(){
+ if(aiRegisterBusy||historyDeleteBusy)return;
+ const record=recordForUser(currentUserUid,selectedEvent).find(r=>r.id===selectedHistoryRecordId);
+ if(!canRegisterAiRecord(record)){toast('공식 등록 전 AI 기록 중 리그 종목을 선택해 주세요.');return;}
+ aiRegisterBusy=true;updateAiRegisterButton([record]);
+ try{
+  if(REMOTE){const result=await remoteWrite('registerRecord',{token:studentToken,recordId:record.id});if(result.registeredId!==record.id)throw Error('등록 결과를 확인하지 못했습니다.');}
+  record.valid=true;persist();selectedHistoryRecordId='';showRank();renderAiHistory();
+  toast('✅ 선택한 기록을 공식 기록으로 등록했습니다.');
+  if(REMOTE)try{await remoteRefresh();renderAiHistory();}catch(syncError){}
+ }catch(error){toast('⚠️ 공식 기록 등록 실패: '+String(error.message||error));}
+ finally{aiRegisterBusy=false;renderAiHistory();}
 }
 async function deleteHistoryRecord(kind){
  if(historyDeleteBusy)return;
@@ -615,7 +631,7 @@ async function deleteHistoryRecord(kind){
 }
 function closeAiHistory(){
   const panel=$('aiHistoryPanel'),button=$('aiHistoryToggle');
-  selectedHistoryRecordId='';$('aiHistoryDelete').disabled=true;
+  selectedHistoryRecordId='';$('aiHistoryDelete').disabled=true;$('aiHistoryRegister').disabled=true;
   panel.classList.add('hidden');button.setAttribute('aria-expanded','false');
   setText('aiHistoryArrow','▾');
 }
@@ -625,11 +641,18 @@ function renderAiHistory(){
   plotHistory(list,'aiHistoryGraph');
   const elList=$('aiHistoryList');elList.replaceChildren();
   updateHistoryDeleteButton('ai',list);
+  updateAiRegisterButton(list);
   if(!list.length){elList.append(el('p','hint','🐣 아직 저장한 기록이 없어요. 첫 측정을 시작해 보세요!'));return;}
   list.forEach((r,i)=>{
     elList.append(historyChoice(r,'ai',i));
   });
   elList.scrollTop=0;
+}
+function showSavedAiHistory(){
+ selectedHistoryRecordId='';
+ const panel=$('aiHistoryPanel'),button=$('aiHistoryToggle');
+ panel.classList.remove('hidden');button.setAttribute('aria-expanded','true');setText('aiHistoryArrow','▴');
+ renderAiHistory();panel.scrollIntoView({block:'nearest',behavior:'smooth'});
 }
 function toggleAiHistory(){
   const panel=$('aiHistoryPanel'),button=$('aiHistoryToggle');
@@ -731,7 +754,7 @@ function setup(){load();
  }selectOptions($('authSchool'),SCHOOLS,'학교를 선택하세요');selectOptions($('coachEvent'),EVENTS);$('coachEvent').addEventListener('change',renderCoachPreview);showRank();renderAuth();for(const b of document.querySelectorAll('[data-auth]'))b.addEventListener('click',()=>{authMode=b.dataset.auth;renderAuth();});$('authPin').addEventListener('input',e=>e.target.value=e.target.value.replace(/\D/g,'').slice(0,4));$('nextStudentPin').addEventListener('input',e=>e.target.value=e.target.value.replace(/\D/g,'').slice(0,4));$('authForm').addEventListener('submit',authSubmit);$('nextStudentForm').addEventListener('submit',nextStudentLogin);document.addEventListener('click',e=>{let b=e.target.closest('[data-action]');if(b)action(b.dataset.action);let m=e.target.closest('[data-save-mode]');if(m){saveMode=m.dataset.saveMode;renderMode();}});
  $('teacherUnlock').addEventListener('click',teacherUnlock);$('teacherSave').addEventListener('click',saveTeacher);$('teacherHistoryToggle').addEventListener('click',toggleTeacherHistory);$('teacherHistoryDelete').addEventListener('click',()=>deleteHistoryRecord('teacher'));$('teacherTimerStart').addEventListener('click',startTeacherTimer);$('teacherTimerStop').addEventListener('click',()=>stopTeacherTimer(true));$('teacherManualAdd').addEventListener('click',addTabletCandidate);$('teacherSavingClose').addEventListener('click',closeTeacherSaving);document.querySelectorAll('[data-teacher-method]').forEach(button=>button.addEventListener('click',()=>setTeacherMeasureMode(button.dataset.teacherMethod)));$('teacherSettings').addEventListener('click',populationPanel);$('populationSave').addEventListener('click',savePopulation);
  $('cameraToggle').addEventListener('click',()=>cameraActive?stopCamera():cameraStart());$('cameraFlip').addEventListener('click',async()=>{if(state==='running'){toast('측정 중 카메라는 전환할 수 없습니다.');return;}cameraFacing=cameraFacing==='user'?'environment':'user';if(cameraActive){stopCamera();await cameraStart();}});$('cameraSoundTest').addEventListener('click',()=>{audio();playSignal('ready');setTimeout(()=>playSignal('end'),1100);toast('🔊 준비음 → 종료음 순서로 재생합니다.');});$('soundVolume').addEventListener('input',e=>setText('soundVolumeLabel',e.target.value+'%'));$('cameraReset').addEventListener('click',cameraReset);$('pendingSave').addEventListener('click',()=>saveMeasurement(pendingMeasurement));$('pendingDiscard').addEventListener('click',()=>{pendingMeasurement=null;$('cameraPending').classList.add('hidden');cameraReset();toast('저장하지 않고 새 측정을 준비합니다.');});$('testStart').addEventListener('click',()=>{if(state==='running'){toast('이미 측정 중입니다.');return;}audio();cameraReset();testTimer=true;playSignal('ready');beginTiming('test');const f=()=>{if(state==='running'&&testTimer){setText('cameraTime',fmt((performance.now()-clockStart)/1000));requestAnimationFrame(f);}};requestAnimationFrame(f);});$('testStop').addEventListener('click',()=>finishTiming('test'));
- $('aiHistoryToggle').addEventListener('click',toggleAiHistory);$('aiHistoryDelete').addEventListener('click',()=>deleteHistoryRecord('ai'));
+ $('aiHistoryToggle').addEventListener('click',toggleAiHistory);$('aiHistoryDelete').addEventListener('click',()=>deleteHistoryRecord('ai'));$('aiHistoryRegister').addEventListener('click',registerAiHistoryRecord);
  $('coachShowRecords').addEventListener('click',renderCoachRecords);$('coachCopyOpen').addEventListener('click',()=>copyCoach(true));$('coachCopy').addEventListener('click',()=>copyCoach(false));$('coachOpen').addEventListener('click',()=>window.open(CHATGPT_URL,'_blank'));
  window.addEventListener('pagehide',stopCamera);document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='running')stopCamera();});
 }
