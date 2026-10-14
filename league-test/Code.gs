@@ -51,19 +51,20 @@ function handle_(p){
  const action=text_(p.action,40);
  if(action==='join'||action==='login'){
   const school=text_(p.school,30),nick=text_(p.nick,20),grade=Number(p.grade),pin=text_(p.pin,8);
-  if(!SCHOOL_NAMES.includes(school)||![1,2,3].includes(grade)||!/^.{2,16}$/.test(nick)||!/^\d{4}$/.test(pin))throw Error('학교·학년·닉네임·4자리 PIN을 확인해 주세요.');
+  if(!SCHOOL_NAMES.includes(school)||!/^.{2,16}$/.test(nick)||!/^\d{4}$/.test(pin))throw Error('학교·닉네임·4자리 PIN을 확인해 주세요.');
   const users=rows_('Users'),found=findUser_(users,school,nick);
   if(action==='join'){
+   if(![1,2,3].includes(grade))throw Error('학년을 확인해 주세요.');
    if(found)throw Error('해당 학교에서 이미 사용 중인 닉네임입니다.');
    const u=uuid_(),salt=uuid_();sheet_('Users').appendRow([u,school,grade,nick,salt,hash_(pin,salt),new Date().toISOString()]);
-   return {uid:u,token:createSession_(u,'student',school)};
+   return {uid:u,grade,token:createSession_(u,'student',school)};
   }
   const bucket='tries_'+Utilities.base64EncodeWebSafe(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256,school+'|'+nick)).slice(0,32);
   const attempts=Number(cache_().get(bucket)||0);if(attempts>=6)throw Error('로그인 시도가 많습니다. 10분 후 다시 시도해 주세요.');
-  if(!found||Number(found[2])!==grade||hash_(pin,String(found[4]))!==String(found[5])){
+  if(!found||hash_(pin,String(found[4]))!==String(found[5])){
    cache_().put(bucket,String(attempts+1),600);throw Error('로그인 정보가 일치하지 않습니다.');
   }
-  cache_().remove(bucket);const u=String(found[0]);return {uid:u,token:createSession_(u,'student',school)};
+  cache_().remove(bucket);const u=String(found[0]);return {uid:u,grade:Number(found[2]),token:createSession_(u,'student',school)};
  }
  if(action==='teacherLogin'){
   const admin=PropertiesService.getScriptProperties().getProperty('TEACHER_PIN')||'',code=text_(p.code,100),school=text_(p.school,30);
