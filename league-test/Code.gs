@@ -23,13 +23,6 @@ function safeReceipt_(p){const id=text_(p.requestId,90);if(!/^[A-Za-z0-9_-]{20,9
 function userRow_(r){return {uid:String(r[0]),school:String(r[1]),grade:Number(r[2]),nick:String(r[3])};}
 function eventText_(v){if(v instanceof Date)return String(v.getFullYear()%10)+'-'+(v.getMonth()+1)+'-'+v.getDate();return String(v);}
 function recordRow_(r){return {id:String(r[0]),uid:String(r[1]),event:eventText_(r[2]),sec:Number(r[3]),at:String(r[4]),source:String(r[5]),valid:r[6]===true||String(r[6]).toLowerCase()==='true'};}
-function findRecord_(id){
- const sh=sheet_('Records'),last=sh.getLastRow();
- if(last<2)return null;
- const values=sh.getRange(2,1,last-1,7).getValues();
- for(let i=0;i<values.length;i++)if(String(values[i][0])===id)return {sheet:sh,row:i+2,values:values[i]};
- return null;
-}
 function readAll_(){const schools=rows_('Schools'),pop={};schools.forEach(r=>pop[String(r[0])]=Number(r[1]));return {ok:true,users:rows_('Users').map(userRow_),records:rows_('Records').map(recordRow_),schoolPop:pop,serverTime:new Date().toISOString()};}
 function session_(token,role){const id=text_(token,120);if(!/^[A-Za-z0-9_-]{20,120}$/.test(id))throw Error('다시 로그인해 주세요.');const raw=cache_().get('session_'+id);if(!raw)throw Error('로그인 시간이 만료되었습니다. 다시 로그인해 주세요.');const s=JSON.parse(raw);if(s.role!==role)throw Error('접근 권한이 없습니다.');return s;}
 function createSession_(uid,role,school){const t=uuid_()+'-'+uuid_();cache_().put('session_'+t,JSON.stringify({uid,role,school}),SESSION_TTL);return t;}
@@ -85,40 +78,13 @@ function handle_(p){
   const isTeacher=!!p.teacherToken;
   if(isTeacher){const teacher=session_(p.teacherToken,'teacher');if(teacher.school!==u.school)throw Error('담당 학교가 아닙니다.');}
   else if(from.toLowerCase().includes('교사'))throw Error('교사 기록에는 교사 인증이 필요합니다.');
-  const isTest=from==='test'||from.toLowerCase().includes('test')||from.includes('테스트');
+  const isTest=from==='test'||from.toLowerCase().includes('테스트');
   const source=isTeacher?'교사 타이머':isTest?'테스트':'AI 자동 측정';
-  const valid=isTeacher&&!isTest&&OFFICIAL_EVENT_NAMES.includes(ev); const id=uuid_(),at=new Date().toISOString();
+  const valid=!isTest&&OFFICIAL_EVENT_NAMES.includes(ev); const id=uuid_(),at=new Date().toISOString();
   const sh=sheet_('Records'),row=sh.getLastRow()+1;
   sh.getRange(row,3).setNumberFormat('@');
   sh.getRange(row,1,1,7).setValues([[id,u.uid,ev,Math.round(sec*1000)/1000,at,source,valid]]);
   return {record:{id,uid:u.uid,event:ev,sec:Math.round(sec*1000)/1000,at,source,valid}};
- }
- if(action==='officialRecord'){
-  const student=session_(p.token,'student'),id=text_(p.recordId,90),found=findRecord_(id);
-  if(!found)throw Error('선택한 기록을 찾을 수 없습니다. 기록 목록을 새로고침해 주세요.');
-  if(String(found.values[1])!==student.uid)throw Error('본인 기록만 공식 기록으로 등록할 수 있습니다.');
-  const ev=eventText_(found.values[2]),source=String(found.values[5]||'');
-  if(!OFFICIAL_EVENT_NAMES.includes(ev))throw Error('공식 리그 3종목 기록만 공식 기록으로 등록할 수 있습니다.');
-  if(source.toLowerCase().includes('test')||source.includes('테스트'))throw Error('테스트 기록은 공식 기록으로 등록할 수 없습니다.');
-  const sh=found.sheet,last=sh.getLastRow(),rows=sh.getRange(2,1,last-1,7).getValues(),replacedIds=[];
-  for(let i=0;i<rows.length;i++){
-   const row=rows[i];
-   if(String(row[1])!==student.uid||eventText_(row[2])!==ev)continue;
-   const isSelected=String(row[0])===id;
-   if(!isSelected&&recordRow_(row).valid)replacedIds.push(String(row[0]));
-   row[6]=isSelected;
-  }
-  sh.getRange(2,7,rows.length,1).setValues(rows.map(row=>[row[6]]));
-  const updated=rows.find(row=>String(row[0])===id);
-  return {record:recordRow_(updated),replacedIds};
- }
- if(action==='deleteRecord'){
-  const student=session_(p.token,'student'),id=text_(p.recordId,90),found=findRecord_(id);
-  if(!found)throw Error('선택한 기록을 이미 삭제했거나 찾을 수 없습니다.');
-  if(String(found.values[1])!==student.uid)throw Error('본인 기록만 삭제할 수 있습니다.');
-  const deleted=recordRow_(found.values);
-  found.sheet.deleteRow(found.row);
-  return {deleted:true,record:deleted};
  }
  if(action==='population'){
   const teacher=session_(p.teacherToken,'teacher');const counts=p.counts||{};
