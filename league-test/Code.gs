@@ -52,7 +52,7 @@ function handle_(p){
  if(['teacherStudent','teacherNotes','teacherRecord','teacherEditRecord','teacherDeleteRecord','teacherSaveNote'].includes(action))return teacherAdmin_(p);
  if(action==='join'||action==='login'){
   const school=text_(p.school,30),nick=text_(p.nick,20),grade=Number(p.grade),pin=text_(p.pin,8);
-  if(!SCHOOL_NAMES.includes(school)||!/^.{2,16}$/.test(nick)||!/^\d{4}$/.test(pin))throw Error('학교·닉네임·4자리 PIN을 확인해 주세요.');
+  if(!SCHOOL_NAMES.includes(school)||!/^.{2,16}$/.test(nick)||!/^[0-9]{4}$/.test(pin))throw Error('학교·닉네임·4자리 PIN을 확인해 주세요.');
   const users=rows_('Users'),found=findUser_(users,school,nick);
   if(action==='join'){
    if(![1,2,3].includes(grade))throw Error('학년을 확인해 주세요.');
