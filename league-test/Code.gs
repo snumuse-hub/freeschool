@@ -23,7 +23,7 @@ function safeReceipt_(p){const id=text_(p.requestId,90);if(!/^[A-Za-z0-9_-]{20,9
 function userRow_(r){return {uid:String(r[0]),school:String(r[1]),grade:Number(r[2]),nick:String(r[3])};}
 function eventText_(v){if(v instanceof Date)return String(v.getFullYear()%10)+'-'+(v.getMonth()+1)+'-'+v.getDate();return String(v);}
 function recordRow_(r){return {id:String(r[0]),uid:String(r[1]),event:eventText_(r[2]),sec:Number(r[3]),at:String(r[4]),source:String(r[5]),valid:r[6]===true||String(r[6]).toLowerCase()==='true'};}
-function readAll_(){const schools=rows_('Schools'),pop={};schools.forEach(r=>pop[String(r[0])]=Number(r[1]));return {ok:true,users:rows_('Users').map(userRow_),records:rows_('Records').map(recordRow_),schoolPop:pop,serverTime:new Date().toISOString()};}
+function readAll_(){const schools=rows_('Schools'),pop={};schools.forEach(r=>pop[String(r[0])]=Number(r[1]));return {ok:true,users:rows_('Users').map(userRow_),records:rows_('Records').map(recordRow_),schoolPop:pop,leagueConfig:readLeagueConfig_(),serverTime:new Date().toISOString()};}
 function session_(token,role){const id=text_(token,120);if(!/^[A-Za-z0-9_-]{20,120}$/.test(id))throw Error('다시 로그인해 주세요.');const raw=cache_().get('session_'+id);if(!raw)throw Error('로그인 시간이 만료되었습니다. 다시 로그인해 주세요.');const s=JSON.parse(raw);if(s.role!==role)throw Error('접근 권한이 없습니다.');return s;}
 function createSession_(uid,role,school){const t=uuid_()+'-'+uuid_();cache_().put('session_'+t,JSON.stringify({uid,role,school}),SESSION_TTL);return t;}
 function findUser_(list,school,nick){return list.find(r=>String(r[1])===school&&String(r[3]).toLowerCase()===nick.toLowerCase());}
@@ -49,7 +49,7 @@ function doPost(e){
 }
 function handle_(p){
  const action=text_(p.action,40);
- if(['teacherStudent','teacherNotes','teacherRecord','teacherEditRecord','teacherDeleteRecord','teacherSaveNote'].includes(action))return teacherAdmin_(p);
+ if(['teacherStudents','saveLeagueConfig','teacherStudent','teacherNotes','teacherRecord','teacherEditRecord','teacherDeleteRecord','teacherSaveNote'].includes(action))return teacherAdmin_(p);
  if(action==='join'||action==='login'){
   const school=text_(p.school,30),nick=text_(p.nick,20),grade=Number(p.grade),pin=text_(p.pin,8);
   if(!SCHOOL_NAMES.includes(school)||!/^.{2,16}$/.test(nick)||!/^[0-9]{4}$/.test(pin))throw Error('학교·닉네임·4자리 PIN을 확인해 주세요.');
@@ -133,8 +133,10 @@ function teacherNotesSheet_(){const db=SpreadsheetApp.openById(DB_ID);let sh=db.
 function teacherNotes_(teacher,uid){teacherUser_(teacher,uid);const data=teacherNotesSheet_().getDataRange().getValues();return data.slice(1).filter(r=>String(r[1])===uid&&String(r[2])===teacher.school).map(r=>({id:String(r[0]),uid:String(r[1]),date:String(r[3]),text:String(r[4]),createdAt:String(r[5]),updatedAt:String(r[6])})).sort((a,b)=>b.date.localeCompare(a.date)||b.createdAt.localeCompare(a.createdAt));}
 function teacherAdmin_(p){
  const teacher=session_(p.teacherToken,'teacher');
+ if(p.action==='teacherStudents')return {users:rows_('Users').filter(r=>String(r[1])===teacher.school).map(userRow_).sort((a,b)=>a.nick.localeCompare(b.nick,'ko')||a.grade-b.grade)};
+ if(p.action==='saveLeagueConfig'){const config=validateLeagueConfig(p.config);PropertiesService.getScriptProperties().setProperty('LEAGUE_CONFIG_V1',JSON.stringify(config));return {leagueConfig:config};}
  if(p.action==='teacherStudent'){
-  const nick=text_(p.nick,20),row=findUser_(rows_('Users'),teacher.school,nick);if(!row)throw Error('해당 학교에 등록된 닉네임을 찾지 못했습니다.');const user=userRow_(row);
+  let user;if(p.uid)user=teacherUser_(teacher,p.uid);else{const nick=text_(p.nick,20),row=findUser_(rows_('Users'),teacher.school,nick);if(!row)throw Error('해당 학교에 등록된 닉네임을 찾지 못했습니다.');user=userRow_(row);}
   return {user,notes:teacherNotes_(teacher,user.uid),records:rows_('Records').map(recordRow_).filter(r=>r.uid===user.uid)};
  }
  if(p.action==='teacherNotes')return {notes:teacherNotes_(teacher,text_(p.uid,90))};
@@ -158,3 +160,14 @@ function teacherAdmin_(p){
  }
  throw Error('지원하지 않는 교사 작업입니다.');
 }
+
+
+function leagueDate(value){if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(value))return null;const d=new Date(value+'T00:00:00Z');return Number.isFinite(d.getTime())&&d.toISOString().slice(0,10)===value?d:null;}
+function validateLeagueConfig(config){
+ if(!config||!leagueDate(config.start)||!leagueDate(config.end)||config.start>config.end)throw Error('리그 시작일과 종료일을 확인해 주세요.');
+ if(!Array.isArray(config.weeks)||!config.weeks.length||config.weeks.length>104)throw Error('주차는 1~104개로 설정해 주세요.');
+ let previous='';const weeks=config.weeks.map((w,i)=>{if(!w||!leagueDate(w.start)||!leagueDate(w.end)||w.start>w.end)throw Error((i+1)+'주차의 날짜를 확인해 주세요.');if(w.start<config.start||w.end>config.end)throw Error((i+1)+'주차를 리그 전체 기간 안으로 설정해 주세요.');if(previous&&w.start<=previous)throw Error((i+1)+'주차가 앞 주차와 겹칩니다.');previous=w.end;return {start:w.start,end:w.end};});
+ return {start:config.start,end:config.end,weeks};
+}
+
+function readLeagueConfig_(){const raw=PropertiesService.getScriptProperties().getProperty('LEAGUE_CONFIG_V1');return raw?validateLeagueConfig(JSON.parse(raw)):null;}
