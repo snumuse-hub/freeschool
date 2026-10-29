@@ -49,7 +49,7 @@ function doPost(e){
 }
 function handle_(p){
  const action=text_(p.action,40);
- if(['teacherStudents','saveLeagueConfig','teacherStudent','teacherNotes','teacherRecord','teacherEditRecord','teacherDeleteRecord','teacherSaveNote','teacherDrafts','teacherSaveDraft','teacherClaimDraft'].includes(action))return teacherAdmin_(p);
+ if(['teacherStudents','saveLeagueConfig','teacherStudent','teacherNotes','teacherRecord','teacherEditRecord','teacherDeleteRecord','teacherSaveNote','teacherDrafts','teacherSaveDraft','teacherClaimDraft','teacherDirectRecord'].includes(action))return teacherAdmin_(p);
  if(action==='join'||action==='login'){
   const school=text_(p.school,30),nick=text_(p.nick,20),grade=Number(p.grade),pin=text_(p.pin,8);
   if(!SCHOOL_NAMES.includes(school)||!/^.{2,16}$/.test(nick)||!/^[0-9]{4}$/.test(pin))throw Error('학교·닉네임·4자리 PIN을 확인해 주세요.');
@@ -189,6 +189,16 @@ function teacherDraftAction_(teacher,p){
 
 function teacherAdmin_(p){
  const teacher=session_(p.teacherToken,'teacher');
+ if(p.action==='teacherDirectRecord'){
+  const name=text_(p.name,30),grade=Number(p.grade);
+  if(![1,2,3].includes(grade))throw Error('학생 학년을 확인해 주세요.');
+  const found=findUser_(rows_('Users'),teacher.school,name);
+  const draft=teacherDraftAction_(teacher,{...p,action:'teacherSaveDraft'}).draft;
+  if(!found)return {draft,needsRegistration:true};
+  if(Number(found[2])!==grade)return {draft,gradeMismatch:true};
+  const claimed=teacherDraftAction_(teacher,{action:'teacherClaimDraft',draftId:draft.id,uid:String(found[0])});
+  return {record:claimed.record,user:claimed.user};
+ }
  if(['teacherDrafts','teacherSaveDraft','teacherClaimDraft'].includes(p.action))return teacherDraftAction_(teacher,p);
  if(p.action==='teacherStudents')return {users:rows_('Users').filter(r=>String(r[1])===teacher.school).map(userRow_).sort((a,b)=>a.nick.localeCompare(b.nick,'ko')||a.grade-b.grade)};
  if(p.action==='saveLeagueConfig'){const config=validateLeagueConfig(p.config);PropertiesService.getScriptProperties().setProperty('LEAGUE_CONFIG_V1',JSON.stringify(config));return {leagueConfig:config};}
