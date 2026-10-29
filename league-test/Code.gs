@@ -54,11 +54,15 @@ function handle_(p){
   const school=text_(p.school,30),nick=text_(p.nick,20),grade=Number(p.grade),pin=text_(p.pin,8);
   if(!SCHOOL_NAMES.includes(school)||!/^.{2,16}$/.test(nick)||!/^[0-9]{4}$/.test(pin))throw Error('학교·닉네임·4자리 PIN을 확인해 주세요.');
   const users=rows_('Users'),found=findUser_(users,school,nick);
+  const registeringTeacher=action==='join'&&p.teacherToken?session_(p.teacherToken,'teacher'):null;
+  if(registeringTeacher&&registeringTeacher.school!==school)throw Error('담당 학교가 아닙니다.');
   if(action==='join'){
    if(![1,2,3].includes(grade))throw Error('학년을 확인해 주세요.');
    if(found)throw Error('해당 학교에서 이미 사용 중인 닉네임입니다.');
    const u=uuid_(),salt=uuid_();sheet_('Users').appendRow([u,school,grade,nick,salt,hash_(pin,salt),new Date().toISOString()]);
-   return {uid:u,grade,token:createSession_(u,'student',school)};
+   let linked=0,linkFailed=0;
+   if(registeringTeacher){try{const pending=teacherDraftSheet_().getDataRange().getValues().slice(1).filter(r=>String(r[1])===school&&String(r[2]).trim().toLowerCase()===nick.toLowerCase()&&Number(r[11])===grade&&String(r[7])==='pending');for(const r of pending){try{teacherDraftAction_(registeringTeacher,{action:'teacherClaimDraft',draftId:String(r[0]),uid:u});linked++;}catch(err){linkFailed++;}}}catch(err){linkFailed++;}}
+   return {uid:u,grade,token:createSession_(u,'student',school),linkedDrafts:linked,failedDrafts:linkFailed};
   }
   const bucket='tries_'+Utilities.base64EncodeWebSafe(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256,school+'|'+nick)).slice(0,32);
   const attempts=Number(cache_().get(bucket)||0);if(attempts>=6)throw Error('로그인 시도가 많습니다. 10분 후 다시 시도해 주세요.');
@@ -135,19 +139,20 @@ function teacherNotes_(teacher,uid){teacherUser_(teacher,uid);const data=teacher
 /* 교사 전용 임시 측정: 기존 학생 로그인/공식기록 처리 함수와 분리 */
 function teacherDraftSheet_(){
  const db=SpreadsheetApp.openById(DB_ID);let sh=db.getSheetByName('TeacherDrafts');
- if(!sh){sh=db.insertSheet('TeacherDrafts');sh.appendRow(['id','school','name','event','sec','measuredAt','method','status','uid','claimedAt','requestId']);sh.getRange('C:D').setNumberFormat('@');sh.getRange('F:F').setNumberFormat('@');}
+ if(!sh){sh=db.insertSheet('TeacherDrafts');sh.appendRow(['id','school','name','event','sec','measuredAt','method','status','uid','claimedAt','requestId','grade']);sh.getRange('C:D').setNumberFormat('@');sh.getRange('F:F').setNumberFormat('@');}
  return sh;
 }
-function teacherDraftRow_(r){return {id:String(r[0]),school:String(r[1]),name:String(r[2]),event:eventText_(r[3]),sec:Number(r[4]),at:String(r[5]),method:String(r[6]),status:String(r[7]),uid:String(r[8]||'')};}
+function teacherDraftRow_(r){return {id:String(r[0]),school:String(r[1]),name:String(r[2]),event:eventText_(r[3]),sec:Number(r[4]),at:String(r[5]),method:String(r[6]),status:String(r[7]),uid:String(r[8]||''),grade:Number(r[11])||null};}
 function teacherDraftAction_(teacher,p){
  const sh=teacherDraftSheet_(),action=p.action,raw=sh.getDataRange().getValues();
  if(action==='teacherDrafts'){
   return {drafts:raw.slice(1).filter(r=>String(r[1])===teacher.school&&String(r[7])==='pending').map(teacherDraftRow_).sort((a,b)=>b.at.localeCompare(a.at))};
  }
  if(action==='teacherSaveDraft'){
-  const name=text_(p.name,30),ev=text_(p.event,20),sec=Number(p.sec),method=text_(p.method,15),at=text_(p.at,35);
+  const name=text_(p.name,30),ev=text_(p.event,20),sec=Number(p.sec),method=text_(p.method,15),at=text_(p.at,35),grade=Number(p.grade)||null;
   if(!/^[가-힣ㄱ-ㅎㅏ-ㅣA-Za-z0-9_ .-]{1,30}$/.test(name)||!name.trim())throw Error('임시 학생 이름은 1~30자로 입력해 주세요.');
   if(!EVENT_NAMES.includes(ev)||!Number.isFinite(sec)||sec<1||sec>300)throw Error('종목 또는 기록 범위가 올바르지 않습니다.');
+  if(grade!==null&&![1,2,3].includes(grade))throw Error('학년을 확인해 주세요.');
   if(!['phone','tablet'].includes(method))throw Error('측정 방법을 확인해 주세요.');
   const date=new Date(at);
   if(!/^\d{4}-\d{2}-\d{2}T/.test(at)||!Number.isFinite(date.getTime())||date.getTime()>Date.now()+120000)throw Error('측정 일시를 확인해 주세요.');
@@ -156,8 +161,8 @@ function teacherDraftAction_(teacher,p){
    if(String(raw[i][1])!==teacher.school)throw Error('학교 정보가 일치하지 않습니다.');
    return {draft:teacherDraftRow_(raw[i])};
   }
-  const id=uuid_(),draft=[id,teacher.school,name,ev,Math.round(sec*1000)/1000,date.toISOString(),method,'pending','','',requestId];
-  const row=sh.getLastRow()+1;sh.getRange(row,3,1,2).setNumberFormat('@');sh.getRange(row,6).setNumberFormat('@');sh.getRange(row,1,1,11).setValues([draft]);
+  const id=uuid_(),draft=[id,teacher.school,name,ev,Math.round(sec*1000)/1000,date.toISOString(),method,'pending','','',requestId,grade||''];
+  const row=sh.getLastRow()+1;sh.getRange(row,3,1,2).setNumberFormat('@');sh.getRange(row,6).setNumberFormat('@');sh.getRange(row,1,1,12).setValues([draft]);
   return {draft:teacherDraftRow_(draft)};
  }
  if(action==='teacherClaimDraft'){
